@@ -1,10 +1,13 @@
+This is my database of projects that supported me alot during classes in uni. I hope it can help you too. 
+* Matrix is created in order to speed up process in my linear algebra class.
+* Logic is created in my discrete math class.
 # Menu
-* Matrix
-* Logic
+* [Matrix](#matrix)
+* [Logic](#logic)
 ## Matrix
 ### Usage
-* Input need first number is the number of rows. After that is the matrix with space between \
-
+* Input need first number is the number of rows. After that is the matrix with space between
+ 
 **Input:**
 ```
   2
