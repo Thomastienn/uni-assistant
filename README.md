@@ -1,7 +1,8 @@
+# Purpose
 This is my database of projects that supported me alot during classes in uni. I hope it can help you too. 
 * Matrix is created in order to speed up process in my linear algebra class.
 * Logic is created in my discrete math class.
-# Menu
+## Menu
 * [Matrix](#matrix)
 * [Logic](#logic)
 ## Matrix
