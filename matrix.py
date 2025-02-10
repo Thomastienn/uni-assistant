@@ -1,0 +1,220 @@
+from collections import deque
+from fractions import Fraction
+
+class Matrix:
+    def __init__(self, t=eval, a=None):
+        if a is None:
+            self.get(t)
+        else:
+            self.a = a
+        self.t = t
+    def __mul__(self, bmat):
+        ans = None
+        if isinstance(bmat, int):
+            ans = [[0]*len(self.a[0]) for _ in range(len(self.a))]
+            for i in range(len(self.a)):
+                for j in range(len(self.a[0])):
+                    ans[i][j] = self.a[i][j]*bmat
+                    
+        elif isinstance(bmat, Matrix):
+            if len(self.a[0]) != len(bmat.a):
+                assert False, "not matching size"
+            ans = [[0]*len(bmat.a[0]) for _ in range(len(self.a))]
+            for i in range(len(self.a)):
+                for j in range(len(bmat.a[0])):
+                    for k in range(len(bmat.a)):
+                        ans[i][j] += self.a[i][k]*bmat.a[k][j] 
+
+        return Matrix(type(ans[0][0]), ans)
+        
+    def __eq__(self, b):
+        a = self.a
+        if len(a) != len(b) or len(a[0]) != len(b[0]):
+            return False
+        for i in range(len(a)):
+            for j in range(len(a[0])):
+                if a[i][j] != b[i][j]:
+                    return False
+    def __add__(self, bmat:"Matrix"):
+        return self.add(bmat, 1)
+    def __sub__(self, bmat:"Matrix"):
+        return self.add(bmat, -1)
+        
+    def __pow__(self, n):
+        amat = self._copyMat()
+        iden = Matrix(a=self.im(len(self.a)))
+        while n:
+            if n&1:
+                iden *= amat
+            amat *= amat
+            n >>= 1
+            
+        return iden
+    
+    def _copyArr(self):
+        new = [[-1]*len(self.a[0]) for _ in range(len(self.a))]
+        for i in range(len(self.a)):
+            for j in range(len(self.a[0])):
+                new[i][j] = self.a[i][j]
+        return new
+        
+    def _copyMat(self):
+        return Matrix(a=self._copyArr())
+        
+    def assignRow(self, bdelta, brow, adelta, arow, mainR):
+        new = self._copyMat()
+        for c in range(len(self.a[0])):
+            new.a[mainR][c] = self.a[brow][c]*bdelta + self.a[arow][c]*adelta
+        return new
+        
+        
+    def get(self, t):
+        self.a = []
+        n = int(input())
+        for _ in range(n):
+            self.a.append(list(map(t, input().split())))
+            
+        
+    def add(self, bmat: "Matrix", delta=1):
+        b = bmat.a
+        if len(self.a) != len(b) or len(self.a[0]) != len(b[0]):
+            return None
+        ans = [[0]*len(self.a[0]) for _ in range(len(self.a))]
+        for i in range(len(self.a)):
+            for j in range(len(self.a[0])):
+                ans[i][j] = (self.a[i][j] + (b[i][j]*delta))
+                
+        return Matrix(type(ans[0][0]), ans)
+        
+    
+    def T(self):
+        return Matrix(self.t, [list(r) for r in zip(*self.a)])
+        
+    # LLM WORK
+    def inv(self): 
+        A = [row[:] for row in self.a]
+        I = [[1 if i == j else 0 for j in range(len(self.a[0]))] for i in range(len(self.a))]
+        for i in range(len(self.a)): 
+            pivot = A[i][i]
+            if pivot == 0: 
+                for j in range(i + 1, len(self.a)): 
+                    if A[j][i] != 0:
+                        A[i], A[j] = A[j], A[i] 
+                        I[i], I[j] = I[j], I[i] 
+                        pivot = A[i][i] 
+                        break 
+            if pivot == 0: 
+                raise ValueError("Matrix is singular and cannot be inverted.") 
+            for j in range(len(self.a)): 
+                A[i][j] /= pivot 
+                I[i][j] /= pivot 
+            for j in range(len(self.a)): 
+                if i != j: 
+                    factor = A[j][i] 
+                    for k in range(len(self.a)): 
+                        A[j][k] -= factor * A[i][k] 
+                        I[j][k] -= factor * I[i][k] 
+                        
+        return Matrix(type(I[0][0]), I)
+        
+    def rot90(self):
+        return Matrix(self.t,[r[::-1] for r in T(self.a)])
+      
+                    
+        return True
+    
+        
+    def isinv(a:"Matrix", b:"Matrix"):
+        return a*b == b*a
+        
+    def show(self):
+        for r in self.a:
+            print(*r)
+        print()
+        
+    def print_l(self):
+        print(str(self.a).replace(" ", ""))
+        
+    def _rowNonZero(self, rows):
+        for i in range(len(rows)):
+            if rows[i] != 0:
+                return i
+        return len(rows)
+        
+    def _rearrange(arr):
+        arr.sort(key=lambda r: self._rowNonZero(r))
+        
+    def isrref(self, arr=None):
+        if arr is None:
+            arr = self._copyArr()
+        prev = None
+        for r in range(len(arr)):
+            i = self._rowNonZero(arr[r])
+            
+            # FULL OF ZEROS
+            if i == len(arr[r]) and r != len(arr)-1:
+                return False
+                
+            # BELOW AND ABOVE MUST BE 0 TOO
+            for r1 in range(r+1, len(arr)):
+                if arr[r1][i] != 0:
+                    return False
+            for r1 in range(r):
+                if arr[r1][i] != 0:
+                    return False
+                    
+            # THE LAST ONE MUST BE MORE LEFT
+            if prev != None and i <= prev:
+                return False
+            prev = i
+        
+        return True
+        
+    def concat(self, bmat):
+        if len(bmat.a) != len(self.a):
+            assert False, "not matching size"
+        new = self._copyArr()
+        for i in range(len(new)):
+            new[i] += bmat.a[i]
+        
+        return Matrix(a=new)
+    
+    # LLM WORK 
+    def rref(self):
+        A = self._copyArr()
+        rows, cols = len(A), len(A[0])
+        r = 0  # Row index
+    
+        for c in range(cols):
+            # Find the row with the largest absolute value in column c
+            pivot_row = max(range(r, rows), key=lambda i: abs(A[i][c]), default=None)
+            if pivot_row == None or A[pivot_row][c] == 0:
+                continue  # Skip if column is all zeros
+    
+            # Swap the current row with the pivot row
+            A[r], A[pivot_row] = A[pivot_row], A[r]
+    
+            # Normalize the pivot row (make leading coefficient 1)
+            pivot = A[r][c]
+            A[r] = [val / pivot for val in A[r]]
+    
+            # Eliminate all other entries in the current column
+            for i in range(rows):
+                if i != r:
+                    factor = A[i][c]
+                    A[i] = [A[i][j] - factor * A[r][j] for j in range(cols)]
+    
+            r += 1  # Move to the next row
+    
+        return Matrix(a=A)
+
+def im(n):
+        return [[1 if i == j else 0 for j  in range(n)] for i in range(n)]
+def imat(n):
+    return Matrix(a=im(n))
+    
+a = Matrix(t=Fraction)
+#b = Matrix(t=Fraction)
+
+#(a.concat(imat(len(a.a)))).rref().show()
+(a.inv()).show()
