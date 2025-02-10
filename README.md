@@ -47,7 +47,7 @@ This is my database of projects that supported me alot during classes in uni. I 
   a * 2  # Apply to all elements
   a + b  # Add 2 matrices
   a - b  # Subtract 2 matrices
-  a^10   # Matrix exponential (Use binary exponential) -> FAST
+  a**10   # Matrix exponential (Use binary exponential) -> FAST
   a == b # Check if 2 matrices are identical
 
   # Get copies
