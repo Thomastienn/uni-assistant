@@ -5,6 +5,8 @@ This is my database of projects that supported me alot during classes in uni. I 
 ## Menu
 * [Matrix](#matrix)
 * [Logic](#logic)
+* [Complex](#complex)
+* [Quadratic Equation](#quadratic-equation)
 ## Matrix
 ### Usage
 * Input need first number is the number of rows. After that is the matrix with space between
@@ -99,3 +101,5 @@ This is my database of projects that supported me alot during classes in uni. I 
       carry = x1 and x2 
       return summ, carry
 ```
+## Complex
+## Quadratic Equation
