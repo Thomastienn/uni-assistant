@@ -64,8 +64,10 @@ class QuadEq:
         self.disc = b**2 - 4*a*c
         
     def solve(self):
+        if self.a == 0:
+            return Fraction(-self.c,self.b)
         if self.disc == 0:
-            return Fraction(-b,2*a)
+            return Fraction(-self.b,2*a)
         if self.disc > 0:
             return -self.b+math.sqrt(self.disc)/2*self.a, -b-math.sqrt(self.disc)/2*self.a
         
