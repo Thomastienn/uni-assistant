@@ -50,6 +50,52 @@ class Matrix:
             n >>= 1
             
         return iden
+        
+    def removeRow(self, row):
+        self.a.pop(row)
+        
+    def removeCol(self,col):
+        n = len(self.a)
+        for i in range(n):
+            self.a[i].pop(col)
+    
+    def det2d(self):
+        n,m = len(self.a), len(self.a[0])
+        assert (n==2 and m==2)
+        
+        return self.a[0][0]*self.a[1][1] - \
+                self.a[0][1]*self.a[1][0]
+    
+    def sign_cof(self, row,col):
+        return -1 if (row+col)&1 else 1
+    
+    def minor(self, row, col):
+        n, m = len(self.a), len(self.a[0])
+        new_a = []
+        for i in range(n):
+            for j in range(m):
+                if i == row or j == col:
+                    continue
+                if not new_a or len(new_a[-1]) == m-1:
+                    new_a.append([])
+                new_a[-1].append(self.a[i][j])
+        new_mat = Matrix(a=new_a)
+        return new_mat.det()
+        
+        
+    def cof(self,row,col):
+        return self.sign_cof(row,col)*self.minor(row,col)
+    
+    def det(self):
+        n,m = len(self.a), len(self.a[0])
+        if n == 2 and m == 2:
+            return self.det2d()
+        ans = 0
+        # always first row    
+        for i in range(m):
+            ans += self.a[0][i] * self.cof(0,i)
+        return ans
+        
     
     def _copyArr(self):
         new = [[-1]*len(self.a[0]) for _ in range(len(self.a))]
@@ -213,8 +259,9 @@ def im(n):
 def imat(n):
     return Matrix(a=im(n))
     
+    
+    
 a = Matrix(t=Fraction)
-#b = Matrix(t=Fraction)
+print(a.det())
 
-#(a.concat(imat(len(a.a)))).rref().show()
-(a.inv()).show()
+
