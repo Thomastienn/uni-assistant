@@ -196,7 +196,7 @@ class Matrix:
         return new_mat.adj()*(1/new_mat.det())
         
     def rot90(self):
-        return Matrix(self.t,[r[::-1] for r in T(self.a)])
+        return Matrix(self.t,[r[::-1] for r in self.T(self.a)])
         
     def isinv(a:"Matrix", b:"Matrix"):
         return a*b == b*a
@@ -215,7 +215,7 @@ class Matrix:
                 return i
         return len(rows)
         
-    def _rearrange(arr):
+    def _rearrange(self,arr):
         arr.sort(key=lambda r: self._rowNonZero(r))
         
     def isrref(self, arr=None):
