@@ -43,7 +43,7 @@ This is my database of projects that supported me alot during classes in uni. I 
   # 3 4
   # [[1,2],[3,4]]
   a.show()    # Show the matrix with spacing and no brackets
-` a.print_l() # Show as a 2D array
+  a.print_l() # Show as a 2D array
 
   # Operations (Return a new matrix)
   a * b  # Multiply 2 matrices
