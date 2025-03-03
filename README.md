@@ -11,6 +11,7 @@ This is my database of projects that supported me alot during classes in uni. I 
 ### Usage
 * Input need first number is the number of rows. After that is the matrix with space between
 * Every function is returning a new copy matrix or a value.
+* The function is using 0-indexed (use with caution)
  
 **Input:**
 ```
@@ -60,11 +61,11 @@ This is my database of projects that supported me alot during classes in uni. I 
   # Assigning rows
   # b_delta, b_row, a_delta, a_row, applied row
   # used for RREF and other algorithms
-  a.assignRow(2, 0, 1, 1, 1) # This means apply to | row 1 = 2*(row 0) + 1*(row 1)
-  a.swapRow(0,1)             # Swap row 1 and 2
-  a.swapCol(0,1)             # Swap column 1 and 2 (In future update)
-  a.removeRow(0)             # Remove row 1
-  a.removeCol(1)             # Remove column 2
+  a.assignRow(2, 0, 1, 1, 1) # This means apply to -> row 1 = 2*(row 0) + 1*(row 1) (Zero indexed)
+  a.swapRow(0,1)             # Swap row 0 and 1
+  a.swapCol(0,1)             # Swap column 0 and 1 (In future update)
+  a.removeRow(0)             # Remove row 0
+  a.removeCol(1)             # Remove column 1
 
   # Special operations
   a.T()       # Get the transpose
