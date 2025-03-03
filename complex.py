@@ -55,6 +55,7 @@ class Complex:
             cur *= cur
             n >>= 1
         return ans
+    
         
 class QuadEq:
     def __init__(self,a,b,c):
@@ -74,8 +75,13 @@ class QuadEq:
         return Complex(-self.b, math.sqrt(abs(self.disc)))/(2*self.a),\
             Complex(-self.b, -math.sqrt(abs(self.disc)))/(2*self.a)
     def __repr__(self):
+        if isinstance(self.a, Complex) or \
+            isinstance(self.b, Complex) or \
+            isinstance(self.c, Complex):
+            return f"({self.a})x^2+({self.b})x+({self.c})"
+    
         x2 = (str(self.a) if abs(self.a) != 1 else "") + "x^2" if self.a != 0 else ""
-        sign1 = "-" if self.b < 0 else ("+" if x2 and self.b != 0 else "")
+        sign1 = "-" if(self.b < 0) else ("+" if x2 and self.b != 0 else "")
         x = (str(abs(self.b)) if abs(self.b) != 1 else "") + "x" if self.b != 0 else ""
         sign2 = "-" if self.c < 0 else ("+" if (x2 or self.b != 0) and self.c != 0 else "")
         c = str(abs(self.c)) if self.c != 0 else ""
@@ -86,10 +92,13 @@ def rad_deg(rad):
 def deg_rad(deg):
     return deg*math.pi/180
     
-a = Complex(-1, 1)
+a = Complex(-1,7)
+b = Complex(-3,3)
 
-print(a.arg())
-
+print(a*b.conj())
+print((a*b).conj())
+print(a*a.conj())
+print(a.d)
 
 
         
