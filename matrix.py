@@ -10,13 +10,7 @@ class Matrix:
         self.t = t
     def __mul__(self, bmat):
         ans = None
-        if isinstance(bmat, int):
-            ans = [[0]*len(self.a[0]) for _ in range(len(self.a))]
-            for i in range(len(self.a)):
-                for j in range(len(self.a[0])):
-                    ans[i][j] = self.a[i][j]*bmat
-                    
-        elif isinstance(bmat, Matrix):
+        if isinstance(bmat, Matrix):
             if len(self.a[0]) != len(bmat.a):
                 assert False, "not matching size"
             ans = [[0]*len(bmat.a[0]) for _ in range(len(self.a))]
@@ -24,7 +18,12 @@ class Matrix:
                 for j in range(len(bmat.a[0])):
                     for k in range(len(bmat.a)):
                         ans[i][j] += self.a[i][k]*bmat.a[k][j] 
-
+        else:
+            ans = [[0]*len(self.a[0]) for _ in range(len(self.a))]
+            for i in range(len(self.a)):
+                for j in range(len(self.a[0])):
+                    ans[i][j] = self.a[i][j]*bmat
+                    
         return Matrix(type(ans[0][0]), ans)
         
     def __eq__(self, b):
@@ -85,17 +84,36 @@ class Matrix:
         
     def cof(self,row,col):
         return self.sign_cof(row,col)*self.minor(row,col)
+        
+    def cofMat(self):
+        new = [[0]*len(self.a[0]) for _ in range(len(self.a))]
+        for i in range(len(self.a)):
+            for j in range(len(self.a[0])):
+                new[i][j] = self.cof(i,j)
+        return Matrix(a=new)
+        
+    def adj(self):
+        return self.cofMat().T()
     
+    # Naive method
+    # def det(self):
+        # n,m = len(self.a), len(self.a[0])
+        # assert n == m
+        # if n == 2:
+            # return self.det2d()
+        # ans = 0
+        # # always first row    
+        # for i in range(m):
+            # ans += self.a[0][i] * self.cof(0,i)
+        # return ans
+    
+    # Using adjugate
     def det(self):
         n,m = len(self.a), len(self.a[0])
-        if n == 2 and m == 2:
+        assert n == m
+        if n == 2:
             return self.det2d()
-        ans = 0
-        # always first row    
-        for i in range(m):
-            ans += self.a[0][i] * self.cof(0,i)
-        return ans
-        
+        return (self*self.adj()).a[0][0]
     
     def _copyArr(self):
         new = [[-1]*len(self.a[0]) for _ in range(len(self.a))]
@@ -112,6 +130,15 @@ class Matrix:
         for c in range(len(self.a[0])):
             new.a[mainR][c] = self.a[brow][c]*bdelta + self.a[arow][c]*adelta
         return new
+    
+    # Using cramer's rule
+    def solve(self):
+        pass
+    
+    def swapRow(self, arow,brow):
+        new_a = self._copyArr()
+        new_a[arow], new_a[brow] = new_a[brow], new_a[arow]
+        return Matrix(a=new_a)
         
         
     def get(self, t):
@@ -137,38 +164,39 @@ class Matrix:
         return Matrix(self.t, [list(r) for r in zip(*self.a)])
         
     # LLM WORK
-    def inv(self): 
-        A = [row[:] for row in self.a]
-        I = [[1 if i == j else 0 for j in range(len(self.a[0]))] for i in range(len(self.a))]
-        for i in range(len(self.a)): 
-            pivot = A[i][i]
-            if pivot == 0: 
-                for j in range(i + 1, len(self.a)): 
-                    if A[j][i] != 0:
-                        A[i], A[j] = A[j], A[i] 
-                        I[i], I[j] = I[j], I[i] 
-                        pivot = A[i][i] 
-                        break 
-            if pivot == 0: 
-                raise ValueError("Matrix is singular and cannot be inverted.") 
-            for j in range(len(self.a)): 
-                A[i][j] /= pivot 
-                I[i][j] /= pivot 
-            for j in range(len(self.a)): 
-                if i != j: 
-                    factor = A[j][i] 
-                    for k in range(len(self.a)): 
-                        A[j][k] -= factor * A[i][k] 
-                        I[j][k] -= factor * I[i][k] 
-                        
-        return Matrix(type(I[0][0]), I)
+    # Matrix Inversion Algorithm
+    # def inv(self): 
+        # A = [row[:] for row in self.a]
+        # I = [[1 if i == j else 0 for j in range(len(self.a[0]))] for i in range(len(self.a))]
+        # for i in range(len(self.a)): 
+            # pivot = A[i][i]
+            # if pivot == 0: 
+                # for j in range(i + 1, len(self.a)): 
+                    # if A[j][i] != 0:
+                        # A[i], A[j] = A[j], A[i] 
+                        # I[i], I[j] = I[j], I[i] 
+                        # pivot = A[i][i] 
+                        # break 
+            # if pivot == 0: 
+                # raise ValueError("Matrix is singular and cannot be inverted.") 
+            # for j in range(len(self.a)): 
+                # A[i][j] /= pivot 
+                # I[i][j] /= pivot 
+            # for j in range(len(self.a)): 
+                # if i != j: 
+                    # factor = A[j][i] 
+                    # for k in range(len(self.a)): 
+                        # A[j][k] -= factor * A[i][k] 
+                        # I[j][k] -= factor * I[i][k] 
+        # return Matrix(type(I[0][0]), I)
+    
+    # Inverse by determinant and adjungate
+    def inv(self):
+        new_mat = self._copyMat()
+        return new_mat.adj()*(1/new_mat.det())
         
     def rot90(self):
         return Matrix(self.t,[r[::-1] for r in T(self.a)])
-      
-                    
-        return True
-    
         
     def isinv(a:"Matrix", b:"Matrix"):
         return a*b == b*a
@@ -262,6 +290,4 @@ def imat(n):
     
     
 a = Matrix(t=Fraction)
-print(a.det())
-
-
+a.inv().show()
