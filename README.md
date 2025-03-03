@@ -10,6 +10,7 @@ This is my database of projects that supported me alot during classes in uni. I 
 ## Matrix
 ### Usage
 * Input need first number is the number of rows. After that is the matrix with space between
+* Every function is returning a new copy matrix or a value.
  
 **Input:**
 ```
@@ -46,7 +47,7 @@ This is my database of projects that supported me alot during classes in uni. I 
 
   # Operations (Return a new matrix)
   a * b  # Multiply 2 matrices
-  a * 2  # Apply to all elements
+  a * 2  # Apply to all elements (Haven't support the left multiply -> You can't do 2 * a)
   a + b  # Add 2 matrices
   a - b  # Subtract 2 matrices
   a**10   # Matrix exponential (Use binary exponential) -> FAST
@@ -60,10 +61,14 @@ This is my database of projects that supported me alot during classes in uni. I 
   # b_delta, b_row, a_delta, a_row, applied row
   # used for RREF and other algorithms
   a.assignRow(2, 0, 1, 1, 1) # This means apply to | row 1 = 2*(row 0) + 1*(row 1)
+  a.swapRow(0,1)             # Swap row 1 and 2
+  a.swapCol(0,1)             # Swap column 1 and 2 (In future update)
+  a.removeRow(0)             # Remove row 1
+  a.removeCol(1)             # Remove column 2
 
   # Special operations
   a.T()       # Get the transpose
-  a.inv()     # Get the inverse of A if exist
+  a.inv()     # Get the inverse of A if exist (Updated: You can switch between Matrix Inversion Algorithm or inverse by Determinant And Adjungate)
   a.rot90()   # Rotate clockwise 90 degrees
   a.concat(b) # Connect 2 matrices to create augmented matrix (Concat sideway)
   a.rref()    # Get the Reduced Row Echelon Form of the matrix
@@ -76,6 +81,17 @@ This is my database of projects that supported me alot during classes in uni. I 
   # Checking
   a.isrref()                  # check if this matrix is in Reduced Row Echelon Form
   a.isrref(arr=[[0,1],[0,0]]) # check another array
+
+  # Determinant, minor, cofactor
+  a.minor(1, 3)   # Minor of the matrix if remove row 2 and column 4
+  a.cof(1,3)      # Get the cofactor of this minor matrix by multiply with corresponding sign
+  a.sign_cof(1,3) # You can get the sign using this function
+  a.cofMat()      # Give you a whole new matrix, which entry (i,j) is cofactor of the minor matrix (i,j)
+  a.adj()         # Give you the adjungate matrix
+  a.det2d()       # Find determinant of 2d matrix (Must strictly 2d)
+  a.det()         # A more general use. Find determinant of matrix (any size) (Can switch between using Cofactor Method or Adjungate Method)
+  
+  a.solve()       # Future development
 ```
 
 ## Logic 
