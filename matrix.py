@@ -3,17 +3,17 @@ from fractions import Fraction
 
 class Matrix:
     def __init__(self, t=eval, a=None):
+        self.t = t
         if a is None:
-            self.get(t)
+            self.get()
         else:
             self.a = a
-        self.t = t
     def __mul__(self, bmat):
         ans = None
         if isinstance(bmat, Matrix):
             if len(self.a[0]) != len(bmat.a):
                 assert False, "not matching size"
-            ans = [[0]*len(bmat.a[0]) for _ in range(len(self.a))]
+            ans = [[self.t("0")]*len(bmat.a[0]) for _ in range(len(self.a))]
             for i in range(len(self.a)):
                 for j in range(len(bmat.a[0])):
                     for k in range(len(bmat.a)):
@@ -24,7 +24,7 @@ class Matrix:
                 for j in range(len(self.a[0])):
                     ans[i][j] = self.a[i][j]*bmat
                     
-        return Matrix(type(ans[0][0]), ans)
+        return Matrix(self.t, ans)
         
     def __eq__(self, b):
         a = self.a
@@ -65,6 +65,19 @@ class Matrix:
         return self.a[0][0]*self.a[1][1] - \
                 self.a[0][1]*self.a[1][0]
     
+    # Sarrus's Rule
+    def det3d(self):
+        assert len(self.a)==len(self.a[0])==3
+        s = self.t("0")
+        for off in range(3):
+            pro1 = self.t("1")
+            pro2 = self.t("1")
+            for i in range(3):
+                pro1 *= self.a[i][(i+off)%3]
+                pro2 *= self.a[i][(off-i)%3]
+            s += pro1 - pro2
+        return s
+    
     def sign_cof(self, row,col):
         return -1 if (row+col)&1 else 1
     
@@ -84,6 +97,13 @@ class Matrix:
         
     def cof(self,row,col):
         return self.sign_cof(row,col)*self.minor(row,col)
+        
+    def minorMat(self):
+        new = [[0]*len(self.a[0]) for _ in range(len(self.a))]
+        for i in range(len(self.a)):
+            for j in range(len(self.a[0])):
+                new[i][j] = self.minor(i,j)
+        return Matrix(a=new)
         
     def cofMat(self):
         new = [[0]*len(self.a[0]) for _ in range(len(self.a))]
@@ -109,10 +129,14 @@ class Matrix:
     
     # Using adjugate
     def det(self):
+        if len(self.a) == 0:
+            return 1
         n,m = len(self.a), len(self.a[0])
         assert n == m
         if n == 2:
             return self.det2d()
+        if n == 3:
+            return self.det3d()
         return (self*self.adj()).a[0][0]
     
     def _copyArr(self):
@@ -132,8 +156,23 @@ class Matrix:
         return new
     
     # Using cramer's rule
-    def solve(self):
-        pass
+    def solve(self, b):
+        detA = self.det()
+        new_a = [Fraction(self.changeCol(i,0,b).det(),detA) for i in range(len(self.a))]
+        return Matrix(a=[new_a])
+        
+    def changeRow(self,arow,brow,other):
+        new_a = self._copyArr()
+        other_a = other._copyArr()
+        new_a[arow] = other_a[brow]
+        return Matrix(a=new_a)
+        
+    def changeCol(self,acol,bcol,other):
+        new_a = self._copyArr()
+        other_a = other._copyArr()
+        for i in range(len(self.a)):
+            new_a[i][acol] = other_a[i][bcol]
+        return Matrix(a=new_a)
     
     def swapRow(self, arow,brow):
         new_a = self._copyArr()
@@ -141,11 +180,11 @@ class Matrix:
         return Matrix(a=new_a)
         
         
-    def get(self, t):
+    def get(self):
         self.a = []
         n = int(input())
         for _ in range(n):
-            self.a.append(list(map(t, input().split())))
+            self.a.append(list(map(self.t, input().split())))
             
         
     def add(self, bmat: "Matrix", delta=1):
@@ -157,7 +196,7 @@ class Matrix:
             for j in range(len(self.a[0])):
                 ans[i][j] = (self.a[i][j] + (b[i][j]*delta))
                 
-        return Matrix(type(ans[0][0]), ans)
+        return Matrix(self.t, ans)
         
     
     def T(self):
@@ -192,8 +231,21 @@ class Matrix:
     
     # Inverse by determinant and adjungate
     def inv(self):
+        if len(self.a) == 0:
+            return Matrix(a=[])
+        assert len(self.a) == len(self.a[0]), "Must be a square"
+        if len(self.a) == 1:
+            assert self.a[0][0] != 0, "No inverse"
+            return Matrix(a=[[Fraction(1,self.a[0][0])]])
+        if len(self.a) == 2:
+            return self.inv2d()
         new_mat = self._copyMat()
         return new_mat.adj()*(1/new_mat.det())
+        
+    def inv2d(self):
+        new_mat = Matrix(a=[[self.a[1][1], -self.a[0][1]], [-self.a[1][0], self.a[0][0]]])
+        return new_mat*(1/(self.a[0][0]*self.a[1][1] - self.a[0][1]*self.a[1][0]))
+        
         
     def rot90(self):
         return Matrix(self.t,[r[::-1] for r in self.T(self.a)])
@@ -280,14 +332,11 @@ class Matrix:
     
             r += 1  # Move to the next row
     
-        return Matrix(a=A)
+        return Matrix(a=A,t=self.t)
 
 def im(n):
         return [[1 if i == j else 0 for j  in range(n)] for i in range(n)]
 def imat(n):
     return Matrix(a=im(n))
-    
-    
-    
-a = Matrix(t=Fraction)
-a.inv().show()
+
+
