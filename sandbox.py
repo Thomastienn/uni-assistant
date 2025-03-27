@@ -8,4 +8,6 @@ from matrix import *
 from customcomplex import *
 
 a = Matrix()
-a.rref().show()
+b = Matrix()
+
+print(a.solve(b).show())

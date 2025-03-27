@@ -65,7 +65,7 @@ class Vec3d:
         return Vec3d(new_x,new_y,new_z,t=self.t)
         
     def dot(self,other):
-        return Vec3d(x*other.x, y*other.y, z*other.z,t=self.t)
+        return self.x*other.x + self.y*other.y + self.z*other.z
     
     def __mul__(self,num):
         new_x = self.x*num
@@ -104,9 +104,12 @@ class Vec3d:
         return self.smag() ** (0.5)
 
 
-u=Vec3d(-5,-1,2,t=float)
-print(u.mag()*u)
+a=Vec3d(0,4,4,t=float)
+b=Vec3d(-3,5,4,t=float)
+c=Vec3d(5,-6,0,t=float)
+y=Vec3d(8,-5,0,t=float)
 
+print((c.dot(c) * a).dot(a))
 
 
 
