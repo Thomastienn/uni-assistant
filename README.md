@@ -21,12 +21,18 @@ This is my database of projects that supported me alot during classes in uni. I 
   2
   0 3
   4 5
+  2
+  2 x
+  5x^2 10
 ```
 **Samples**
 ``` python3
   # Get the matrix from stdin
+  # You can do t=Fraction for precision (Poly is not compatible with Fraction yet)
+  # t = float, t=int
   a = Matrix()
   b = Matrix()
+  c = Matrix(t=Poly) # Need to use for poly class to use variables
 
   # Specify the type
   a = Matrix(t=Fraction)
@@ -90,9 +96,10 @@ This is my database of projects that supported me alot during classes in uni. I 
   a.cofMat()      # Give you a whole new matrix, which entry (i,j) is cofactor of the minor matrix (i,j)
   a.adj()         # Give you the adjungate matrix
   a.det2d()       # Find determinant of 2d matrix (Must strictly 2d)
+  a.det3d()       # Find determinant of 3d matrix (Use Sarrus rule)
   a.det()         # A more general use. Find determinant of matrix (any size) (Can switch between using Cofactor Method or Adjungate Method)
   
-  a.solve()       # Future development
+  a.solve()       # Use Cramers' Rule to solve
 ```
 
 ## Logic 
