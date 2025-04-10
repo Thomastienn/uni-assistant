@@ -1,5 +1,7 @@
 from fractions import Fraction
 import math
+
+
 class Poly:
     def __init__(self, coef, t=Fraction):
         self.t = t
@@ -14,7 +16,7 @@ class Poly:
         if isinstance(other, int) or isinstance(other, Fraction):
             return Poly([self.coef[0]+other] + self.coef[1:])
         n, m = len(self.coef), len(other.coef)
-        new = [0] * max(n,m)
+        new = [0] * max(n, m)
         for i in range(n):
             new[i] += self.coef[i]
         for i in range(m):
@@ -25,7 +27,7 @@ class Poly:
         if isinstance(other, int) or isinstance(other, Fraction):
             return Poly([self.coef[0]-other] + self.coef[1:])
         n, m = len(self.coef), len(other.coef)
-        new = [0] * max(n,m)
+        new = [0] * max(n, m)
         for i in range(n):
             new[i] += self.coef[i]
         for i in range(m):
@@ -44,12 +46,15 @@ class Poly:
 
     def val(self, x):
         return sum(c * (x ** i) for i, c in enumerate(self.coef))
+
     def deriv(self):
         new = [i * c for i, c in enumerate(self.coef)][1:]
         return Poly(new)
+
     def __str__(self):
         terms = []
-        for i in range(len(self.coef) - 1, -1, -1):  # Iterate from highest degree down
+        # Iterate from highest degree down
+        for i in range(len(self.coef) - 1, -1, -1):
             c = self.coef[i]
             if c == 0:
                 continue
@@ -57,10 +62,11 @@ class Poly:
                 terms.append(f"{c}")
             elif i == 1:
                 terms.append(f"{'' if c == 1 else '-' if c == -1 else c}x")
-            else: 
+            else:
                 terms.append(f"{'' if c == 1 else '-' if c == -1 else c}x^{i}")
         return "+".join(terms).replace("+-", "-") if terms else "0"
-    def parse(self,poly_str):
+
+    def parse(self, poly_str):
         poly_str = poly_str.replace(" ", "").replace("-", "+-")
         terms = poly_str.split("+")
         coeffs = {}
@@ -91,9 +97,9 @@ class Poly:
     def __truediv__(self, other):
         if self == other:
             return Poly([1])
-        if(isinstance(other, int)):
+        if (isinstance(other, int)):
             other = Poly([other])
-        if(len(other.coef)>1 and len(self.coef)>1):
+        if (len(other.coef) > 1 and len(self.coef) > 1):
             assert False, "Not support poly"
         if other.coef[0] == 0:
             assert False, "Zero division"
@@ -101,26 +107,27 @@ class Poly:
         if len(self.coef) == 1:
             new = [Fraction(self.coef[0], other)]
         else:
-            new = [Fraction(self.coef[i], other.coef[0]) for i in range(len(self.coef))]
+            new = [Fraction(self.coef[i], other.coef[0])
+                   for i in range(len(self.coef))]
 
         return Poly(coef=new)
-        
+
     def __eq__(self, other):
         if isinstance(other, int):
             return (len(self.coef) == 1 and self.coef[0] == other)
         if len(self.coef) != len(other.coef):
             return False
         return all(self.coef[i] == other.coef[i] for i in range(len(self.coef)))
-       
-    def __rmul__(self,other):
+
+    def __rmul__(self, other):
         return self * other
-        
+
     def __radd__(self, other):
         if isinstance(other, int) or isinstance(other, Fraction):
             return Poly([self.coef[0]+other] + self.coef[1:])
         else:
             assert False, "no support"
-        
+
     def solve(self):
         if len(self.coef) == 1:
             return [] if self.coef[0] != 0 else [0]

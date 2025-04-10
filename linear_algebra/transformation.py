@@ -1,3 +1,6 @@
+from matrix import Matrix
+
+
 class Transformation:
     # func is the transformation function that you define
     # it should have 1 argument which is type Matrix (should be a vector)
