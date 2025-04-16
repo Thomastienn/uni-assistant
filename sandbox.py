@@ -7,7 +7,6 @@ from polynomial import *
 from matrix import *
 from customcomplex import *
 
-a = Matrix()
-b = Matrix()
-
-print(a.solve(b).show())
+a = Matrix(t=Fraction)
+b = Matrix(t=Fraction)
+(a*(-2)+b*5).show()

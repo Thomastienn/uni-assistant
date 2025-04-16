@@ -1,5 +1,11 @@
 from collections import deque
 from fractions import Fraction
+import sys
+import numpy as np
+sys.path.append("D:\\cpFiles\\uni\\helper")
+from polynomial import *
+
+
 
 class Matrix:
     def __init__(self, t=eval, a=None):
@@ -333,11 +339,32 @@ class Matrix:
             r += 1  # Move to the next row
     
         return Matrix(a=A,t=self.t)
-
-def im(n):
-        return [[1 if i == j else 0 for j  in range(n)] for i in range(n)]
-def imat(n):
-    return Matrix(a=im(n))
-
-
-
+        
+    def im(self,n):
+        return [[self.t("1") if i == j else self.t("0") for j  in range(n)] for i in range(n)]
+    def imat(self, n):
+        return Matrix(a=self.im(n))
+        
+    # Characteristic Polynomial
+    def cA(self):
+        if len(self.a) != len(self.a[0]):
+            assert False, "need to be nxn"
+        lambdaa = Poly("x")
+        mat = (self.imat(len(self.a)) * lambdaa) - self
+        
+        return mat.det()
+        
+    def eigen_vals(self):
+        equal = self.cA()
+        return list(map(lambda x: round(float(x), 3), np.roots(equal.coef)))
+        
+    def x_eigenvec(self, lambdaa):
+        if len(self.a) != len(self.a[0]):
+            assert False, "need to be nxn"
+        mat = (self.imat(len(self.a)) * lambdaa) - self
+        b = Matrix(a=([[self.t("0")] for _ in range(len(mat.a))]),t=self.t)
+        return mat.rref()
+        
+        
+a = Matrix()
+print(a.eigen_vals())
