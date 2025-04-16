@@ -11,6 +11,17 @@ class Matrix:
         else:
             self.a = a
 
+    def __eq__(self, other: "Matrix"):
+        n, m = len(self.a), len(self.a[0])
+        k, l = len(other.a), len(other.a[0])
+        if n != k or m != l:
+            return False
+        for i in range(n):
+            for j in range(m):
+                if self.a[i][j] != other.a[i][j]:
+                    return False
+        return True
+
     def __mul__(self, bmat):
         ans = None
         if isinstance(bmat, Matrix):
@@ -243,7 +254,7 @@ class Matrix:
     def inv2d(self):
         new_mat = Matrix(a=[[self.a[1][1], -self.a[0][1]],
                          [-self.a[1][0], self.a[0][0]]])
-        return new_mat*(1/(self.a[0][0]*self.a[1][1] - self.a[0][1]*self.a[1][0]))
+        return new_mat*(1/(self.a[0][0]*self.a[1][1] - self.a[0][1]*self.a[1][0]))  # noqa
 
     def rot90(self):
         return Matrix(self.t, [r[::-1] for r in self.T(self.a)])
@@ -288,7 +299,7 @@ class Matrix:
                     return False
 
             # THE LAST ONE MUST BE MORE LEFT
-            if prev != None and i <= prev:
+            if prev is not None and i <= prev:
                 return False
             prev = i
 
@@ -313,7 +324,7 @@ class Matrix:
             # Find the row with the largest absolute value in column c
             pivot_row = max(range(r, rows), key=lambda i: abs(
                 A[i][c]), default=None)
-            if pivot_row == None or A[pivot_row][c] == 0:
+            if pivot_row is None or A[pivot_row][c] == 0:
                 continue  # Skip if column is all zeros
 
             # Swap the current row with the pivot row
@@ -334,10 +345,16 @@ class Matrix:
         return Matrix(a=A, t=self.t)
 
     def im(self, n):
-        return [[self.t("1") if i == j else self.t("0") for j in range(n)] for i in range(n)]
+        return [[self.t("1") if i == j else self.t("0") for j in range(n)] for i in range(n)]  # noqa
 
     def imat(self, n):
         return Matrix(a=self.im(n))
+
+    def is_vector(self):
+        for i in range(len(self.a)):
+            if len(self.a[i]) != 1:
+                return False
+        return True
 
     # Characteristic Polynomial
     def cA(self):
@@ -348,13 +365,59 @@ class Matrix:
 
         return mat.det()
 
+    # TODO
+    def cB(self, basis):
+        pass
+
     def eigen_vals(self):
         equal = self.cA()
         return list(map(lambda x: round(float(x), 3), np.roots(equal.coef)))
 
+    # TODO
     def x_eigenvec(self, lambdaa):
         if len(self.a) != len(self.a[0]):
             assert False, "need to be nxn"
         mat = (self.imat(len(self.a)) * lambdaa) - self
         b = Matrix(a=([[self.t("0")] for _ in range(len(mat.a))]), t=self.t)
         return mat.rref()
+
+# In development
+
+
+class Transformation:
+    # func is the transformation function that you define
+    # it should have 1 argument which is type Matrix (should be a vector)
+    # then transform into another Matrix (should be a vector too)
+
+    # RN: the dimension of the input vector
+    # RM: the dimension of the output vector
+    def __init__(self, RN, RM, func):
+        self.RN = RN
+        self.RM = RM
+        self.func = func
+
+    def get_transform_mat(self, RN, RM):
+        A_mn = [[-1] * RM for _ in range(RN)]
+        for i, standard_basis in enumerate(self.get_standard_basis(len(self.args))):
+            T_e = self.transform(standard_basis)
+            for j in range(RM):
+                A_mn[i][j] = T_e.args[j]
+        return Matrix(a=A_mn)
+
+    def transform(self, vector):
+        if len(vector) != self.RN or not vector.is_vector():
+            assert False, "Invalid vector"
+        return self.func(vector)
+
+    def zero_vec(self, n):
+        return Matrix(a=([[self.t("0")] for _ in range(n)]), t=self.t)
+
+    def get_standard_basis(self, n):
+        for i in range(n):
+            yield Matrix(a=[0]*i + [1] + [0]*(n-i-1))
+
+    # TODO
+    def is_linear(self):
+        zerov = self.zero_vec(len(self.args))
+        if (self.func(zerov) != zerov):
+            return False

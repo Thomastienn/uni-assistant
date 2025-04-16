@@ -1,11 +1,11 @@
 import sys
 import math
 from fractions import Fraction
-sys.path.append("D:\\cpFiles\\uni\\helper")
+# sys.path.append("D:\\cpFiles\\uni\\helper")
 
-from polynomial import *
-from matrix import *
-from customcomplex import *
+from linear_algebra.polynomial import *
+from linear_algebra.matrix import *
+from linear_algebra.customcomplex import *
 
 a = Matrix(t=Fraction)
 b = Matrix(t=Fraction)
