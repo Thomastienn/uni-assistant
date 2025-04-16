@@ -41,7 +41,7 @@ class Poly:
             for j, c2 in enumerate(other.coef):
                 new[i + j] += c1 * c2
         return Poly(new)
-        
+
     def val(self, x):
         return sum(c * (x ** i) for i, c in enumerate(self.coef))
     def deriv(self):
@@ -76,7 +76,7 @@ class Poly:
                 coeff = coeff.strip()
                 if coeff in ["", "+", "-"]:
                     coeff += "1"
-                coeff = self.t(coeff)  
+                coeff = self.t(coeff)
                 exp = int(exp)
             else:
                 coeff = self.t(term)
@@ -84,16 +84,16 @@ class Poly:
             coeffs[exp] = coeffs.get(exp, self.t(0)) + coeff
         max_degree = max(coeffs.keys(), default=0)
         return [coeffs.get(i, 0) for i in range(max_degree + 1)]
-        
+
     def __abs__(self):
         return 0
-        
+
     def __truediv__(self, other):
         if self == other:
             return Poly([1])
         if(isinstance(other, int)):
             other = Poly([other])
-        if (len(other.coef) >  1 and len(self.coef) > 1):
+        if(len(other.coef)>1 and len(self.coef)>1):
             assert False, "Not support poly"
         if other.coef[0] == 0:
             assert False, "Zero division"
@@ -111,6 +111,15 @@ class Poly:
         if len(self.coef) != len(other.coef):
             return False
         return all(self.coef[i] == other.coef[i] for i in range(len(self.coef)))
+       
+    def __rmul__(self,other):
+        return self * other
+        
+    def __radd__(self, other):
+        if isinstance(other, int) or isinstance(other, Fraction):
+            return Poly([self.coef[0]+other] + self.coef[1:])
+        else:
+            assert False, "no support"
         
     def solve(self):
         if len(self.coef) == 1:
