@@ -7,7 +7,7 @@ class Matrix:
     def __init__(self, t=eval, a=None):
         self.t = t
         if a is None:
-            self.get()
+            self._get()
         else:
             self.a = a
 
@@ -38,15 +38,6 @@ class Matrix:
                 for j in range(len(self.a[0])):
                     ans[i][j] = self.a[i][j]*bmat
         return Matrix(self.t, ans)
-
-    def __eq__(self, b):
-        a = self.a
-        if len(a) != len(b) or len(a[0]) != len(b[0]):
-            return False
-        for i in range(len(a)):
-            for j in range(len(a[0])):
-                if a[i][j] != b[i][j]:
-                    return False
 
     def __add__(self, bmat: "Matrix"):
         return self.add(bmat, 1)
@@ -161,6 +152,8 @@ class Matrix:
     def _copyMat(self):
         return Matrix(a=self._copyArr())
 
+    # Helpful in finding rref
+    # by applying row operations
     def assignRow(self, bdelta, brow, adelta, arow, mainR):
         new = self._copyMat()
         for c in range(len(self.a[0])):
@@ -191,7 +184,7 @@ class Matrix:
         new_a[arow], new_a[brow] = new_a[brow], new_a[arow]
         return Matrix(a=new_a)
 
-    def get(self):
+    def _get(self):
         self.a = []
         n = int(input())
         for _ in range(n):
@@ -208,6 +201,7 @@ class Matrix:
 
         return Matrix(self.t, ans)
 
+    # Transpose
     def T(self):
         return Matrix(self.t, [list(r) for r in zip(*self.a)])
 
@@ -259,14 +253,17 @@ class Matrix:
     def rot90(self):
         return Matrix(self.t, [r[::-1] for r in self.T(self.a)])
 
+    @staticmethod
     def isinv(a: "Matrix", b: "Matrix"):
         return a*b == b*a
 
+    # Display matrix
     def show(self):
         for r in self.a:
             print(*r)
         print()
 
+    # Display as an array
     def print_l(self):
         print(str(self.a).replace(" ", ""))
 
@@ -279,6 +276,7 @@ class Matrix:
     def _rearrange(self, arr):
         arr.sort(key=lambda r: self._rowNonZero(r))
 
+    # is Row Reduced Echelon Form
     def isrref(self, arr=None):
         if arr is None:
             arr = self._copyArr()
@@ -305,6 +303,7 @@ class Matrix:
 
         return True
 
+    # Concat sideways
     def concat(self, bmat):
         if len(bmat.a) != len(self.a):
             assert False, "not matching size"
@@ -315,6 +314,8 @@ class Matrix:
         return Matrix(a=new)
 
     # LLM WORK
+    # Row Reduced Echelon Form
+    # TODO rework this too
     def rref(self):
         A = self._copyArr()
         rows, cols = len(A), len(A[0])
@@ -344,9 +345,11 @@ class Matrix:
 
         return Matrix(a=A, t=self.t)
 
+    # identity matrix as an array
     def im(self, n):
         return [[self.t("1") if i == j else self.t("0") for j in range(n)] for i in range(n)]  # noqa
 
+    # identity matrix
     def imat(self, n):
         return Matrix(a=self.im(n))
 
@@ -369,6 +372,7 @@ class Matrix:
     def cB(self, basis):
         pass
 
+    # Eigenvalues
     def eigen_vals(self):
         equal = self.cA()
         return list(map(lambda x: round(float(x), 3), np.roots(equal.coef)))
@@ -380,44 +384,3 @@ class Matrix:
         mat = (self.imat(len(self.a)) * lambdaa) - self
         b = Matrix(a=([[self.t("0")] for _ in range(len(mat.a))]), t=self.t)
         return mat.rref()
-
-# In development
-
-
-class Transformation:
-    # func is the transformation function that you define
-    # it should have 1 argument which is type Matrix (should be a vector)
-    # then transform into another Matrix (should be a vector too)
-
-    # RN: the dimension of the input vector
-    # RM: the dimension of the output vector
-    def __init__(self, RN, RM, func):
-        self.RN = RN
-        self.RM = RM
-        self.func = func
-
-    def get_transform_mat(self, RN, RM):
-        A_mn = [[-1] * RM for _ in range(RN)]
-        for i, standard_basis in enumerate(self.get_standard_basis(len(self.args))):
-            T_e = self.transform(standard_basis)
-            for j in range(RM):
-                A_mn[i][j] = T_e.args[j]
-        return Matrix(a=A_mn)
-
-    def transform(self, vector):
-        if len(vector) != self.RN or not vector.is_vector():
-            assert False, "Invalid vector"
-        return self.func(vector)
-
-    def zero_vec(self, n):
-        return Matrix(a=([[self.t("0")] for _ in range(n)]), t=self.t)
-
-    def get_standard_basis(self, n):
-        for i in range(n):
-            yield Matrix(a=[0]*i + [1] + [0]*(n-i-1))
-
-    # TODO
-    def is_linear(self):
-        zerov = self.zero_vec(len(self.args))
-        if (self.func(zerov) != zerov):
-            return False
