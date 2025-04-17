@@ -319,7 +319,6 @@ class Matrix:
             return Matrix(a=new)
 
     # LLM WORK
-    # Row Reduced Echelon Form
     # TODO rework this too
     def rref(self):
         A = self._copyArr()
@@ -403,12 +402,68 @@ class Matrix:
     # Eigenvalues
     def eigen_vals(self):
         equal = self.cA()
-        return list(map(lambda x: round(float(x), 3), np.roots(equal.coef)))
+        roots = np.roots(equal.coef[::-1])
+        ret = [round(float(x.real), 3) if abs(
+            x.imag) < 1e-5 else x for x in roots]
+        return ret
 
-    # TODO
-    def x_eigenvec(self, lambdaa):
+    # chek if they are similar
+    # TODO in progress
+    # not fully functional, will add jordan form check
+    def is_similar(self, other):
+        n, m = len(self.a), len(self.a[0])
+        k, l = len(other.a), len(other.a[0])
+        if n != k or m != l:
+            return False
+        if self.det() != other.det():
+            return False
+        return sorted(self.eigen_vals()) == sorted(other.eigen_vals())
+
+    # This can only give you a view of rref
+    # you need to look at the augmented matrix and get the vector
+    # return rref matrix represent the eigen vector of the corresponding eigen value
+    def eigen_vec(self, eigen_val):
         if len(self.a) != len(self.a[0]):
             assert False, "need to be nxn"
-        mat = (Matrix.imat(len(self.a)) * lambdaa) - self
-        b = Matrix(a=([[self.t("0")] for _ in range(len(mat.a))]), t=self.t)
-        return mat.rref()
+
+        solve_mat = Matrix.imat(len(self.a), self.t)
+        solve_mat = solve_mat * eigen_val - self
+        zero_vec = Matrix.zero_vec(len(self.a), self.t)
+
+        res_mat = solve_mat.concat(zero_vec)
+        return res_mat.rref()
+
+    def algebraic_multiplicity(self, eigen_val):
+        return self.eigen_vals().count(eigen_val)
+
+    def geometric_multiplicity(self, eigen_val):
+        cnt = 0
+        for row in self.eigen_vec(eigen_val).a:
+            zeros = 0
+            for c in row:
+                if c == 0:
+                    zeros += 1
+                    continue
+                    if isinstance(c, Poly) and c == Poly("0"):
+                        zeros += 1
+            cnt += zeros == len(row)
+
+        return cnt
+
+    def is_diagnolizable(self):
+        for eigen_val in self.eigen_vals():
+            alg_mult = self.algebraic_multiplicity(eigen_val)
+            geo_mult = self.geometric_multiplicity(eigen_val)
+            if alg_mult != geo_mult:
+                return False
+        return True
+
+    # The diagonal matrix of a
+    def diag(self):
+        if not self.is_diagnolizable():
+            assert False, "not diagnolizable"
+        eigenval = self.eigen_vals()
+        new_a = Matrix.imat(len(self.a), self.t)
+        for i in range(len(self.a)):
+            new_a[i][i] = eigenval[i]
+        return Matrix(a=new_a, t=self.t)

@@ -70,11 +70,7 @@ class LinearTransformation:
             assert False, "Invalid vector"
         return self.get_inverse_transform_func()(vector)
 
-    def cD(self, basis, vector):
-
-        pass
-        # TODO unfinished
-
+    # TODO unfinished
     def is_linear(self):
         zerov = Matrix.zero_vec(len(self.RN))
         if (self.func(zerov) != zerov):

@@ -100,12 +100,17 @@ class Poly:
         if (isinstance(other, int)):
             other = Poly([other])
         if (len(other.coef) > 1 and len(self.coef) > 1):
+            if other == self:
+                return Poly([1])
             assert False, "Not support poly"
         if other.coef[0] == 0:
             assert False, "Zero division"
         new = []
         if len(self.coef) == 1:
-            new = [Fraction(self.coef[0], other)]
+            if isinstance(self.coef[0], Poly) or isinstance(other, Poly):
+                new = [self.coef[0] / other.coef[0]]
+            else:
+                new = [Fraction(self.coef[0], other)]
         else:
             new = [Fraction(self.coef[i], other.coef[0])
                    for i in range(len(self.coef))]
