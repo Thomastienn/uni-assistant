@@ -1,7 +1,7 @@
 # Purpose
 This is my database of projects that supported me alot during classes in uni. I hope it can help you too. 
 ## Menu
-* [LinearAlgebra](#linear_algebra)
+* [LinearAlgebra](#linear-algebra)
 * [Logic](#logic)
 ### Usage
 * Input need first number is the number of rows. After that is the matrix with space between
