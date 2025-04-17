@@ -1,5 +1,5 @@
 from fractions import Fraction
-from polynomial import Poly
+from linear_algebra.polynomial import Poly
 import numpy as np
 
 
@@ -47,7 +47,7 @@ class Matrix:
 
     def __pow__(self, n):
         amat = self._copyMat()
-        iden = Matrix(a=self.im(len(self.a)))
+        iden = Matrix(a=Matrix.im(len(self.a), self.t))
         while n:
             if n & 1:
                 iden *= amat
@@ -209,7 +209,7 @@ class Matrix:
     # Matrix Inversion Algorithm
     def inv_MIA(self):
         A = [row[:] for row in self.a]
-        I_MAT = self.im(len(self.a))
+        I_MAT = Matrix.im(len(self.a), self.t)
         for i in range(len(self.a)):
             pivot = A[i][i]
             if pivot == 0:
@@ -346,12 +346,18 @@ class Matrix:
         return Matrix(a=A, t=self.t)
 
     # identity matrix as an array
-    def im(self, n):
-        return [[self.t("1") if i == j else self.t("0") for j in range(n)] for i in range(n)]  # noqa
+    @staticmethod
+    def im(n, t=eval):
+        return [[t("1") if i == j else t("0") for j in range(n)] for i in range(n)]  # noqa
 
     # identity matrix
-    def imat(self, n):
-        return Matrix(a=self.im(n))
+    @staticmethod
+    def imat(n, t=eval):
+        return Matrix(a=Matrix.im(n, t))
+
+    @staticmethod
+    def zero_vec(n, t):
+        return Matrix(a=([[t("0")] for _ in range(n)]), t=t)
 
     def is_vector(self):
         for i in range(len(self.a)):
@@ -359,18 +365,29 @@ class Matrix:
                 return False
         return True
 
+    # Get which row of the column vector
+    def vR(self, pos):
+        if not self.is_vector():
+            assert False, "not a vector, cannot use"
+        return self.a[pos][0]
+
     # Characteristic Polynomial
     def cA(self):
         if len(self.a) != len(self.a[0]):
             assert False, "need to be nxn"
         lambdaa = Poly("x")
-        mat = (self.imat(len(self.a)) * lambdaa) - self
+        mat = (Matrix.imat(len(self.a), self.t) * lambdaa) - self
 
         return mat.det()
 
-    # TODO
-    def cB(self, basis):
-        pass
+    # basis: list of basis vectors
+    def cB(self, basis: list["Matrix"]):
+        solve_a = [[None] * len(basis) for _ in range(len(basis[0].a))]
+        for i, basis_vec in enumerate(basis):
+            for j in range(len(basis_vec.a)):
+                solve_a[j][i] = basis_vec.a[j][0]
+        solve_mat = Matrix(a=solve_a, t=self.t)
+        return solve_mat.solve(self).T()
 
     # Eigenvalues
     def eigen_vals(self):
@@ -381,6 +398,6 @@ class Matrix:
     def x_eigenvec(self, lambdaa):
         if len(self.a) != len(self.a[0]):
             assert False, "need to be nxn"
-        mat = (self.imat(len(self.a)) * lambdaa) - self
+        mat = (Matrix.imat(len(self.a)) * lambdaa) - self
         b = Matrix(a=([[self.t("0")] for _ in range(len(mat.a))]), t=self.t)
         return mat.rref()

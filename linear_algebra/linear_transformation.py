@@ -1,7 +1,7 @@
-from matrix import Matrix
+from linear_algebra.matrix import Matrix
 
 
-class Transformation:
+class LinearTransformation:
     # func is the transformation function that you define
     # it should have 1 argument which is type Matrix (should be a vector)
     # then transform into another Matrix (should be a vector too)
@@ -12,26 +12,26 @@ class Transformation:
         self.RN = RN
         self.RM = RM
         self.func = func
+        # TODO
+        # if (not self.is_linear()):
+        #     assert False, "This is not a linear transformation"
 
-    def get_transform_mat(self, RN, RM):
-        A_mn = [[-1] * RM for _ in range(RN)]
-        for i, standard_basis in enumerate(self.get_standard_basis(len(self.args))):
+    def get_transform_mat(self):
+        A_mn = Matrix(a=[[] for _ in range(self.RM)])
+        for i, standard_basis in enumerate(LinearTransformation.get_standard_basis(self.RN)):
             T_e = self.transform(standard_basis)
-            for j in range(RM):
-                A_mn[i][j] = T_e.args[j]
-        return Matrix(a=A_mn)
+            A_mn = A_mn.concat(T_e)
+        return A_mn
 
-    def transform(self, vector):
-        if len(vector) != self.RN or not vector.is_vector():
+    def transform(self, vector) -> Matrix:
+        if len(vector.a) != self.RN or not vector.is_vector():
             assert False, "Invalid vector"
         return self.func(vector)
 
-    def zero_vec(self, n):
-        return Matrix(a=([[self.t("0")] for _ in range(n)]), t=self.t)
-
-    def get_standard_basis(self, n):
+    @staticmethod
+    def get_standard_basis(n):
         for i in range(n):
-            yield Matrix(a=[0]*i + [1] + [0]*(n-i-1))
+            yield Matrix(a=[[0]*i + [1] + [0]*(n-i-1)]).T()
 
     # TODO
     def is_linear(self):
