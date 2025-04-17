@@ -84,6 +84,7 @@ This is my database of projects that supported me alot during classes in uni. I 
   Matrix.im(10)            # Create an identical matrix with type array of size n
   Matrix.imat(10)          # Return an identical matrix with type Matrix
   Matrix.mvector([1,2,3])  # Create a vertical vector (very convenient for linear transformation and spectral)
+  Matrix.zero_vec()        # Get the zero vector
 
   # Checking
   a.isrref()                  # check if this matrix is in Reduced Row Echelon Form
@@ -105,7 +106,6 @@ This is my database of projects that supported me alot during classes in uni. I 
   a.cA()                               # Characteristic Polynomial
   a.vR()                               # For vertical vector, get the value at the "pos" row
   a.is_vector()                        # Help to check if it is vertical vector
-  Matrix.zero_vec()                    # Get the zero vector
   a.cB([Matrix(), Matrix(), Matrix()]) # Get coordinate vector according to a list of basis
   a.eigen_values()                     # Get all eigen values of this matrix
 
