@@ -1,18 +1,14 @@
 # Purpose
 This is my database of projects that supported me alot during classes in uni. I hope it can help you too. 
-* Matrix is created in order to speed up process in my linear algebra class.
-* Logic is created in my discrete math class.
 ## Menu
-* [Matrix](#matrix)
+* [LinearAlgebra](#linear_algebra)
 * [Logic](#logic)
-* [Complex](#complex)
-* [Quadratic Equation](#quadratic-equation)
-## Matrix
 ### Usage
 * Input need first number is the number of rows. After that is the matrix with space between
 * Every function is returning a new copy matrix or a value.
 * The function is using 0-indexed (use with caution)
- 
+
+ # Linear Algebra
 **Input:**
 ```
   2
@@ -82,8 +78,8 @@ This is my database of projects that supported me alot during classes in uni. I 
 
   # Static, global methods
   Matrix.isinv(a, b) # Check if 2 matrices are inverses
-  im(10)             # Create an identical matrix with type array of size n
-  imat(10)           # Return an identical matrix with type Matrix
+  Matrix.im(10)      # Create an identical matrix with type array of size n
+  Matrix.imat(10)    # Return an identical matrix with type Matrix
 
   # Checking
   a.isrref()                  # check if this matrix is in Reduced Row Echelon Form
@@ -100,6 +96,26 @@ This is my database of projects that supported me alot during classes in uni. I 
   a.det()         # A more general use. Find determinant of matrix (any size) (Can switch between using Cofactor Method or Adjungate Method)
   
   a.solve()       # Use Cramers' Rule to solve
+
+  # Linear transformation
+  a.cA()                               # Characteristic Polynomial
+  a.vR()                               # For vertical vector, get the value at the "pos" row
+  a.is_vector()                        # Help to check if it is vertical vector
+  Matrix.zero_vec()                    # Get the zero vector
+  a.cB([Matrix(), Matrix(), Matrix()]) # Get coordinate vector according to a list of basis
+  a.eigen_values()                     # Get all eigen values of this matrix
+
+  # EXAMPLE SETUP
+  def func(vec: Matrix):
+     row1 = [vec.vR(0)+2*vec.vR(1)]
+     row2 = [vec.vR(0) - vec.vR(1)]
+     return Matrix(a=[row1, row2])
+  lt = LinearTransformation(2, 2, func)
+  # END
+
+  lt.get_transform_mat().show()              # Get matrix A (the transform matrix of the linear transformation)
+  LinearTransformation.get_standard_basis()  # A generator for you to get standard basis in Rn (Ex: for basis in LinearTransformation.get_standard_basis())
+  lt.transform(Matrix(a=[[1],[2]])           # Transform a vector
 ```
 
 ## Logic 
@@ -125,5 +141,3 @@ This is my database of projects that supported me alot during classes in uni. I 
       carry = x1 and x2 
       return summ, carry
 ```
-## Complex
-## Quadratic Equation
