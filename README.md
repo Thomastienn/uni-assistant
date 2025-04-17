@@ -3,12 +3,15 @@ This is my database of projects that supported me alot during classes in uni. I 
 ## Menu
 * [LinearAlgebra](#linear-algebra)
 * [Logic](#logic)
+
+# Linear Algebra
+<details>
+ 
 ### Usage
 * Input need first number is the number of rows. After that is the matrix with space between
 * Every function is returning a new copy matrix or a value.
 * The function is using 0-indexed (use with caution)
 
- # Linear Algebra
 **Input:**
 ```
   2
@@ -73,13 +76,14 @@ This is my database of projects that supported me alot during classes in uni. I 
   a.T()       # Get the transpose
   a.inv()     # Get the inverse of A if exist (Updated: You can switch between Matrix Inversion Algorithm or inverse by Determinant And Adjungate)
   a.rot90()   # Rotate clockwise 90 degrees
-  a.concat(b) # Connect 2 matrices to create augmented matrix (Concat sideway)
+  a.concat(b) # Connect 2 matrices to create augmented matrix (Concat sideway) (in_place=False by default)
   a.rref()    # Get the Reduced Row Echelon Form of the matrix
 
   # Static, global methods
-  Matrix.isinv(a, b) # Check if 2 matrices are inverses
-  Matrix.im(10)      # Create an identical matrix with type array of size n
-  Matrix.imat(10)    # Return an identical matrix with type Matrix
+  Matrix.isinv(a, b)       # Check if 2 matrices are inverses
+  Matrix.im(10)            # Create an identical matrix with type array of size n
+  Matrix.imat(10)          # Return an identical matrix with type Matrix
+  Matrix.mvector([1,2,3])  # Create a vertical vector (very convenient for linear transformation and spectral)
 
   # Checking
   a.isrref()                  # check if this matrix is in Reduced Row Echelon Form
@@ -95,7 +99,7 @@ This is my database of projects that supported me alot during classes in uni. I 
   a.det3d()       # Find determinant of 3d matrix (Use Sarrus rule)
   a.det()         # A more general use. Find determinant of matrix (any size) (Can switch between using Cofactor Method or Adjungate Method)
   
-  a.solve()       # Use Cramers' Rule to solve
+  a.solve(Matrix(a=[[1],[2],[3]]))       # Use Cramers' Rule to solve
 
   # Linear transformation
   a.cA()                               # Characteristic Polynomial
@@ -111,14 +115,22 @@ This is my database of projects that supported me alot during classes in uni. I 
      row2 = [vec.vR(0) - vec.vR(1)]
      return Matrix(a=[row1, row2])
   lt = LinearTransformation(2, 2, func)
+  B = [Matrix(), Matrix()]
+  D = [Matrix(), Matrix()]
   # END
 
   lt.get_transform_mat().show()              # Get matrix A (the transform matrix of the linear transformation)
   LinearTransformation.get_standard_basis()  # A generator for you to get standard basis in Rn (Ex: for basis in LinearTransformation.get_standard_basis())
   lt.transform(Matrix(a=[[1],[2]])           # Transform a vector
+  lt.get_transform_ADB(B,D)                  # Get the transform matrix A (from Rn to Rm where B is the basis in Rn and D is the basis in Rm)
+  lt.get_inverse_transform_func()            # You can get the inverse function of the linear transformation from this
+  lt.inv_transform()                         # This one is simimlar to transform but using inverse function
 ```
+</details>
 
 ## Logic 
+<details>
+ 
 ### Usage
 ``` python3
   # Declare a function
@@ -141,3 +153,4 @@ This is my database of projects that supported me alot during classes in uni. I 
       carry = x1 and x2 
       return summ, carry
 ```
+</details>
