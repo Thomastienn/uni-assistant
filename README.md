@@ -104,7 +104,7 @@ This is my database of projects that supported me alot during classes in uni. I 
 
   # Linear transformation
   a.cA()                               # Characteristic Polynomial
-  a.vR()                               # For vertical vector, get the value at the "pos" row
+  a.vR(0)                              # For vertical vector, get the value at the "pos" row
   a.is_vector()                        # Help to check if it is vertical vector
   a.cB([Matrix(), Matrix(), Matrix()]) # Get coordinate vector according to a list of basis
   a.eigen_values()                     # Get all eigen values of this matrix
@@ -119,12 +119,14 @@ This is my database of projects that supported me alot during classes in uni. I 
   D = [Matrix(), Matrix()]
   # END
 
-  lt.get_transform_mat().show()              # Get matrix A (the transform matrix of the linear transformation)
+  # Static methods
   LinearTransformation.get_standard_basis()  # A generator for you to get standard basis in Rn (Ex: for basis in LinearTransformation.get_standard_basis())
+
+  lt.get_transform_mat()                     # Get matrix A (the transform matrix of the linear transformation)
   lt.transform(Matrix(a=[[1],[2]])           # Transform a vector
   lt.get_transform_ADB(B,D)                  # Get the transform matrix A (from Rn to Rm where B is the basis in Rn and D is the basis in Rm)
   lt.get_inverse_transform_func()            # You can get the inverse function of the linear transformation from this
-  lt.inv_transform()                         # This one is simimlar to transform but using inverse function
+  lt.inv_transform(Matrix(a=[[1],[2]]))      # This one is simimlar to transform but using inverse function
 
   # Spectral theory
   a.is_similar(Matrix(a=[[1],[2],[3]]))      # In progress, not guarantee similar now
