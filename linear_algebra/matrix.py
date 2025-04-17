@@ -304,14 +304,19 @@ class Matrix:
         return True
 
     # Concat sideways
-    def concat(self, bmat):
+    def concat(self, bmat, in_place=False):
         if len(bmat.a) != len(self.a):
             assert False, "not matching size"
-        new = self._copyArr()
+
+        if in_place:
+            new = self.a
+        else:
+            new = self._copyArr()
         for i in range(len(new)):
             new[i] += bmat.a[i]
 
-        return Matrix(a=new)
+        if not in_place:
+            return Matrix(a=new)
 
     # LLM WORK
     # Row Reduced Echelon Form
@@ -381,13 +386,19 @@ class Matrix:
         return mat.det()
 
     # basis: list of basis vectors
+    # Give a coordinate vector base on the basis
     def cB(self, basis: list["Matrix"]):
-        solve_a = [[None] * len(basis) for _ in range(len(basis[0].a))]
-        for i, basis_vec in enumerate(basis):
-            for j in range(len(basis_vec.a)):
-                solve_a[j][i] = basis_vec.a[j][0]
-        solve_mat = Matrix(a=solve_a, t=self.t)
+        solve_mat = Matrix(a=[[] * len(basis)
+                           for _ in range(len(basis[0].a))], t=self.t)
+        for basis_vec in basis:
+            solve_mat.concat(basis_vec, in_place=True)
+
         return solve_mat.solve(self).T()
+
+    # Create a vector
+    @staticmethod
+    def mvector(elements: list, t=eval):
+        return Matrix(a=[[x] for x in elements], t=t)
 
     # Eigenvalues
     def eigen_vals(self):
