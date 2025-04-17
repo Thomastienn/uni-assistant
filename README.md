@@ -125,6 +125,14 @@ This is my database of projects that supported me alot during classes in uni. I 
   lt.get_transform_ADB(B,D)                  # Get the transform matrix A (from Rn to Rm where B is the basis in Rn and D is the basis in Rm)
   lt.get_inverse_transform_func()            # You can get the inverse function of the linear transformation from this
   lt.inv_transform()                         # This one is simimlar to transform but using inverse function
+
+  # Spectral theory
+  a.is_similar(Matrix(a=[[1],[2],[3]]))      # In progress, not guarantee similar now
+  a.eigen_vec(5)                             # Give you the rref solution of the eigen vector from corresponding eigen value
+  a.algebraic_multiplicity(5)                # Give you the algebraic multiplicity of the eigen value
+  a.geometric_multiplicity(5)                # Give you the geometric multiplicity of the eigen value
+  a.is_diagnolizable()                       # Can this matrix be diagonalized
+  a.diag()                                   # Get the matrix D (the diagonal matrix)
 ```
 </details>
 
