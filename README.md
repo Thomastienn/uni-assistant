@@ -1,5 +1,5 @@
 # Purpose
-This is my database of projects that supported me alot during classes in uni. I hope it can help you too. 
+Random small tools to finish up repeatitive tasks. 
 ## Menu
 * [LinearAlgebra](#linear-algebra)
 * [Logic](#logic)
