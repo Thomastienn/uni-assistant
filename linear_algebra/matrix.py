@@ -294,28 +294,24 @@ class Matrix:
     # is Row Reduced Echelon Form
     def isrref(self, arr=None):
         if arr is None:
-            arr = self._copyArr()
-        prev = None
-        for r in range(len(arr)):
-            i = self._rowNonZero(arr[r])
+            arr = self.a
+        if not arr:
+            return True
+        if any(len(row) != len(arr[0]) for row in arr):
+            return False
 
-            # FULL OF ZEROS
-            if i == len(arr[r]) and r != len(arr)-1:
+        previous_pivot = -1
+        found_zero_row = False
+        for row_index, row in enumerate(arr):
+            pivot = self._rowNonZero(row)
+            if pivot == len(row):
+                found_zero_row = True
+                continue
+            if found_zero_row or pivot <= previous_pivot or row[pivot] != 1:
                 return False
-
-            # BELOW AND ABOVE MUST BE 0 TOO
-            for r1 in range(r+1, len(arr)):
-                if arr[r1][i] != 0:
-                    return False
-            for r1 in range(r):
-                if arr[r1][i] != 0:
-                    return False
-
-            # THE LAST ONE MUST BE MORE LEFT
-            if prev is not None and i <= prev:
+            if any(other[pivot] != 0 for i, other in enumerate(arr) if i != row_index):
                 return False
-            prev = i
-
+            previous_pivot = pivot
         return True
 
     # Concat sideways
@@ -333,36 +329,47 @@ class Matrix:
         if not in_place:
             return Matrix(new)
 
-    # LLM WORK
-    # TODO rework this too
-    def rref(self):
-        A = self._copyArr()
+    def rref(self, tol=1e-12):
+        if tol < 0:
+            raise ValueError("Tolerance must be nonnegative.")
+        A = [row[:] for row in self]
+        if not A:
+            return Matrix([], t=self.t)
         rows, cols = len(A), len(A[0])
-        r = 0  # Row index
+        if any(len(row) != cols for row in A):
+            raise ValueError("Matrix rows must have the same length.")
 
-        for c in range(cols):
-            # Find the row with the largest absolute value in column c
-            pivot_row = max(range(r, rows), key=lambda i: abs(
-                A[i][c]), default=None)
-            if pivot_row is None or A[pivot_row][c] == 0:
-                continue  # Skip if column is all zeros
+        # Keep integer and fraction input exact during division.
+        exact = all(isinstance(value, (int, Fraction)) for row in A for value in row)
+        if exact:
+            A = [[Fraction(value) for value in row] for row in A]
+        tolerance = 0 if exact else tol
+        pivot_row = 0
 
-            # Swap the current row with the pivot row
-            A[r], A[pivot_row] = A[pivot_row], A[r]
+        for col in range(cols):
+            if pivot_row == rows:
+                break
+            best_row = max(range(pivot_row, rows), key=lambda i: abs(A[i][col]))
+            if abs(A[best_row][col]) <= tolerance:
+                for i in range(pivot_row, rows):
+                    A[i][col] = 0
+                continue
 
-            # Normalize the pivot row (make leading coefficient 1)
-            pivot = A[r][c]
-            A[r] = [val / pivot for val in A[r]]
+            A[pivot_row], A[best_row] = A[best_row], A[pivot_row]
+            pivot = A[pivot_row][col]
+            A[pivot_row] = [value / pivot for value in A[pivot_row]]
+            A[pivot_row][col] = 1
 
-            # Eliminate all other entries in the current column
             for i in range(rows):
-                if i != r:
-                    factor = A[i][c]
-                    A[i] = [A[i][j] - factor * A[r][j] for j in range(cols)]
+                if i == pivot_row:
+                    continue
+                factor = A[i][col]
+                A[i] = [value - factor * pivot_value
+                        for value, pivot_value in zip(A[i], A[pivot_row])]
+                A[i][col] = 0
+            pivot_row += 1
 
-            r += 1  # Move to the next row
-
-        return Matrix(A, t=self.t)
+        return Matrix(A, t=Fraction if exact else self.t)
 
     # identity matrix as an array
     @staticmethod
@@ -484,16 +491,24 @@ class Matrix:
         return Matrix(new_a, t=self.t)
 
     def in_span(self, basis: list["Matrix"]):
-        if len(basis) == 0:
-            return False
+        if not self.is_vector():
+            raise ValueError("Target must be a column vector.")
+        for vector in basis:
+            if not vector.is_vector() or len(vector) != len(self):
+                raise ValueError("Basis vectors must be column vectors matching the target size.")
 
-        solve_mat = basis[0]._copyMat()
-        for i in range(1, len(basis)):
-            solve_mat.concat(basis[i], in_place=True)
+        if not basis or not self:
+            return all(row[0] == 0 for row in self)
 
-        res = solve_mat.solve(self).T()
-        for i in range(len(res)):
-            if res[i][0] != 0:
+        augmented = basis[0]._copyMat()
+        for vector in basis[1:]:
+            augmented.concat(vector, in_place=True)
+        augmented.concat(self, in_place=True)
+
+        for row in augmented.rref():
+            coefficients = row[:-1]
+            target = row[-1]
+            if all(value == 0 for value in coefficients) and target != 0:
                 return False
 
         return True
