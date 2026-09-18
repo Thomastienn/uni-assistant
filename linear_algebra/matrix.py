@@ -48,6 +48,9 @@ class Matrix:
                     ans[i][j] = self[i][j]*bmat
         return Matrix(ans, self.t)
 
+    def __rmul__(self, scalar):
+        return self * scalar
+
     def __add__(self, bmat: "Matrix"):
         return self.add(bmat, 1)
 
@@ -174,6 +177,11 @@ class Matrix:
         detA = self.det()
         new_a = [Fraction(self.changeCol(i, 0, b).det(), detA) for i in range(len(self))]  # noqa
         return Matrix([new_a])
+
+    def solveSelf(self):
+        A = Matrix([row[:-1] for row in self], self.t)
+        b = Matrix([[row[-1]] for row in self], self.t)
+        return A.solve(b)
 
     def changeRow(self, arow, brow, other):
         new_a = self._copyArr()
@@ -382,7 +390,7 @@ class Matrix:
         return Matrix(Matrix.im(n, t))
 
     @staticmethod
-    def zero_vec(n, t):
+    def zero_vec(n, t=eval):
         return Matrix(([[t("0")] for _ in range(n)]), t=t)
 
     def is_vector(self):
@@ -418,8 +426,24 @@ class Matrix:
 
     # Create a vector
     @staticmethod
-    def mvector(elements: list, t=eval):
+    def mvec(*elements, t=eval):
         return Matrix([[x] for x in elements], t=t)
+
+    def dot(self, other: "Matrix"):
+        if not self.is_vector() or not other.is_vector() or len(self) != len(other):
+            raise ValueError("Dot product requires column vectors of the same size.")
+        return sum(a[0] * b[0] for a, b in zip(self, other))
+
+    def cross(self, other: "Matrix"):
+        if not self.is_vector() or not other.is_vector() or len(self) != 3 or len(other) != 3:
+            raise ValueError("Cross product requires two 3D column vectors.")
+        x, y, z = (row[0] for row in self)
+        other_x, other_y, other_z = (row[0] for row in other)
+        return Matrix.mvec(
+            y * other_z - z * other_y,
+            z * other_x - x * other_z,
+            x * other_y - y * other_x,
+            t=self.t)
 
     # Eigenvalues
     def eigen_vals(self):

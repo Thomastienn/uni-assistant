@@ -1,150 +1,167 @@
+import cmath
 from fractions import Fraction
+from itertools import zip_longest
 import math
+from numbers import Number, Rational
+import re
 
 
 class Poly:
     def __init__(self, coef, t=Fraction):
         self.t = t
         if isinstance(coef, str):
-            self.coef = self.parse(coef)
-        elif isinstance(coef, list):
-            self.coef = coef
+            coefficients = self.parse(coef)
+        elif isinstance(coef, (list, tuple)):
+            coefficients = list(coef)
+        elif isinstance(coef, Number):
+            coefficients = [coef]
         else:
-            assert False, "No Support"
+            raise TypeError("Expected a polynomial string, coefficient list, or number.")
+        if any(not isinstance(value, Number) for value in coefficients):
+            raise TypeError("Polynomial coefficients must be numbers.")
+        self.coef = coefficients or [0]
+        while len(self.coef) > 1 and self.coef[-1] == 0:
+            self.coef.pop()
 
     def __add__(self, other):
-        if isinstance(other, int) or isinstance(other, Fraction):
-            return Poly([self.coef[0]+other] + self.coef[1:])
-        n, m = len(self.coef), len(other.coef)
-        new = [0] * max(n, m)
-        for i in range(n):
-            new[i] += self.coef[i]
-        for i in range(m):
-            new[i] += other.coef[i]
-        return Poly(new)
+        if isinstance(other, Number):
+            other = Poly(other, t=self.t)
+        if not isinstance(other, Poly):
+            return NotImplemented
+        coefficients = [a + b for a, b in zip_longest(self.coef, other.coef, fillvalue=0)]
+        return Poly(coefficients, t=self.t)
+
+    def __radd__(self, other):
+        return self + other
+
+    def __neg__(self):
+        return Poly([-value for value in self.coef], t=self.t)
 
     def __sub__(self, other):
-        if isinstance(other, int) or isinstance(other, Fraction):
-            return Poly([self.coef[0]-other] + self.coef[1:])
-        n, m = len(self.coef), len(other.coef)
-        new = [0] * max(n, m)
-        for i in range(n):
-            new[i] += self.coef[i]
-        for i in range(m):
-            new[i] -= other.coef[i]
-        return Poly(new)
+        if not isinstance(other, (Poly, Number)):
+            return NotImplemented
+        return self + (-other)
+
+    def __rsub__(self, other):
+        if not isinstance(other, (Poly, Number)):
+            return NotImplemented
+        return -self + other
 
     def __mul__(self, other):
-        if isinstance(other, int) or isinstance(other, Fraction):
-            return Poly([self.coef[i]*other for i in range(len(self.coef))])
-        n, m = len(self.coef), len(other.coef)
-        new = [0] * (n + m - 1)
-        for i, c1 in enumerate(self.coef):
-            for j, c2 in enumerate(other.coef):
-                new[i + j] += c1 * c2
-        return Poly(new)
-
-    def val(self, x):
-        return sum(c * (x ** i) for i, c in enumerate(self.coef))
-
-    def deriv(self):
-        new = [i * c for i, c in enumerate(self.coef)][1:]
-        return Poly(new)
-
-    def __str__(self):
-        terms = []
-        # Iterate from highest degree down
-        for i in range(len(self.coef) - 1, -1, -1):
-            c = self.coef[i]
-            if c == 0:
-                continue
-            if i == 0:
-                terms.append(f"{c}")
-            elif i == 1:
-                terms.append(f"{'' if c == 1 else '-' if c == -1 else c}x")
-            else:
-                terms.append(f"{'' if c == 1 else '-' if c == -1 else c}x^{i}")
-        return "+".join(terms).replace("+-", "-") if terms else "0"
-
-    def parse(self, poly_str):
-        poly_str = poly_str.replace(" ", "").replace("-", "+-")
-        terms = poly_str.split("+")
-        coeffs = {}
-        for term in terms:
-            if not term:
-                continue
-            if "x" in term:
-                if "^" in term:
-                    coeff, exp = term.split("x^")
-                else:
-                    coeff, exp = term.split("x")
-                    exp = "1"
-                coeff = coeff.strip()
-                if coeff in ["", "+", "-"]:
-                    coeff += "1"
-                coeff = self.t(coeff)
-                exp = int(exp)
-            else:
-                coeff = self.t(term)
-                exp = 0
-            coeffs[exp] = coeffs.get(exp, self.t(0)) + coeff
-        max_degree = max(coeffs.keys(), default=0)
-        return [coeffs.get(i, 0) for i in range(max_degree + 1)]
-
-    def __abs__(self):
-        return 0
-
-    def __truediv__(self, other):
-        if self == other:
-            return Poly([1])
-        if (isinstance(other, int)):
-            other = Poly([other])
-        if (len(other.coef) > 1 and len(self.coef) > 1):
-            if other == self:
-                return Poly([1])
-            assert False, "Not support poly"
-        if other.coef[0] == 0:
-            assert False, "Zero division"
-        new = []
-        if len(self.coef) == 1:
-            if isinstance(self.coef[0], Poly) or isinstance(other, Poly):
-                new = [self.coef[0] / other.coef[0]]
-            else:
-                new = [Fraction(self.coef[0], other)]
-        else:
-            new = [Fraction(self.coef[i], other.coef[0])
-                   for i in range(len(self.coef))]
-
-        return Poly(coef=new)
-
-    def __eq__(self, other):
-        if isinstance(other, int):
-            return (len(self.coef) == 1 and self.coef[0] == other)
-        if len(self.coef) != len(other.coef):
-            return False
-        return all(self.coef[i] == other.coef[i] for i in range(len(self.coef)))
+        if isinstance(other, Number):
+            return Poly([value * other for value in self.coef], t=self.t)
+        if not isinstance(other, Poly):
+            return NotImplemented
+        coefficients = [0] * (len(self.coef) + len(other.coef) - 1)
+        for i, a in enumerate(self.coef):
+            for j, b in enumerate(other.coef):
+                coefficients[i + j] += a * b
+        return Poly(coefficients, t=self.t)
 
     def __rmul__(self, other):
         return self * other
 
-    def __radd__(self, other):
-        if isinstance(other, int) or isinstance(other, Fraction):
-            return Poly([self.coef[0]+other] + self.coef[1:])
-        else:
-            assert False, "no support"
+    def __truediv__(self, other):
+        if isinstance(other, Number):
+            other = Poly(other, t=self.t)
+        if not isinstance(other, Poly):
+            return NotImplemented
+        if other == 0:
+            raise ZeroDivisionError("Cannot divide a polynomial by zero.")
+        if self == other:
+            return Poly(1, t=self.t)
+        if len(other.coef) != 1:
+            raise NotImplementedError("Division by a nonconstant polynomial is not supported.")
+        divisor = other.coef[0]
+        coefficients = [Fraction(value, divisor)
+                        if isinstance(value, Rational) and isinstance(divisor, Rational)
+                        else value / divisor for value in self.coef]
+        return Poly(coefficients, t=self.t)
+
+    def __eq__(self, other):
+        if isinstance(other, Number):
+            return len(self.coef) == 1 and self.coef[0] == other
+        if not isinstance(other, Poly):
+            return NotImplemented
+        return self.coef == other.coef
+
+    def val(self, x):
+        result = 0
+        for coefficient in reversed(self.coef):
+            result = result * x + coefficient
+        return result
+
+    def deriv(self):
+        return Poly([power * self.coef[power] for power in range(1, len(self.coef))], t=self.t)
+
+    def __str__(self):
+        terms = []
+        for power in range(len(self.coef) - 1, -1, -1):
+            coefficient = self.coef[power]
+            if coefficient == 0:
+                continue
+            if power == 0:
+                terms.append(str(coefficient))
+                continue
+            if coefficient == 1:
+                prefix = ""
+            elif coefficient == -1:
+                prefix = "-"
+            else:
+                prefix = str(coefficient)
+            variable = "x" if power == 1 else f"x^{power}"
+            terms.append(prefix + variable)
+        return "+".join(terms).replace("+-", "-") or "0"
+
+    def parse(self, poly_str):
+        expression = "".join(poly_str.split())
+        if not expression:
+            raise ValueError("Polynomial expression cannot be empty.")
+        # A coefficient may be a decimal, scientific notation, or a fraction.
+        number = r"(?:\d+/\d+|(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?)"
+        term_pattern = re.compile(
+            rf"([+-]?)(?:({number})?x(?:\^(\d+))?|({number}))"
+        )
+        coefficients = {}
+        position = 0
+        while position < len(expression):
+            match = term_pattern.match(expression, position)
+            if match is None or (position > 0 and not match.group(1)):
+                raise ValueError(f"Invalid polynomial expression near {expression[position:]!r}.")
+            sign, coefficient, power, constant = match.groups()
+            if constant is not None:
+                value, power = self.t(constant), 0
+            else:
+                value, power = self.t(coefficient or "1"), int(power or "1")
+            if sign == "-":
+                value = -value
+            coefficients[power] = coefficients.get(power, 0) + value
+            position = match.end()
+        return [coefficients.get(power, 0) for power in range(max(coefficients) + 1)]
 
     def solve(self):
-        if len(self.coef) == 1:
-            return [] if self.coef[0] != 0 else [0]
-        if len(self.coef) == 2:
-            return [-self.coef[0] / self.coef[1]]
-        if len(self.coef) == 3:
-            a, b, c = self.coef[2], self.coef[1], self.coef[0]
-            d = b**2 - 4*a*c
-            if d > 0:
-                return [(-b + math.sqrt(d)) / (2*a), (-b - math.sqrt(d)) / (2*a)]
-            elif d == 0:
-                return [-b / (2*a)]
-            else:
-                return [complex(-b, math.sqrt(-d)) / (2*a), complex(-b, -math.sqrt(-d)) / (2*a)]
-        assert False, "Not support"
+        degree = len(self.coef) - 1
+        if degree == 0:
+            if self.coef[0] == 0:
+                raise ValueError("The zero polynomial has infinitely many roots.")
+            return []
+        if degree == 1:
+            constant, slope = self.coef
+            if isinstance(constant, Rational) and isinstance(slope, Rational):
+                return [Fraction(-constant, slope)]
+            return [-constant / slope]
+        if degree != 2:
+            raise NotImplementedError("Root solving supports only degree 0, 1, or 2.")
+
+        c, b, a = self.coef
+        discriminant = b * b - 4 * a * c
+        if discriminant == 0:
+            return [-b / (2 * a)]
+        if isinstance(discriminant, complex) or discriminant < 0:
+            root = cmath.sqrt(discriminant)
+            return [(-b + root) / (2 * a), (-b - root) / (2 * a)]
+
+        # Avoid subtracting nearly equal numbers for real roots.
+        root = math.sqrt(discriminant)
+        q = -(b + math.copysign(root, b)) / 2
+        return [q / a, c / q]

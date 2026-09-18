@@ -83,7 +83,7 @@ Random small tools to finish up repeatitive tasks.
   Matrix.isinv(a, b)       # Check if 2 matrices are inverses
   Matrix.im(10)            # Create an identical matrix with type array of size n
   Matrix.imat(10)          # Return an identical matrix with type Matrix
-  Matrix.mvector([1,2,3])  # Create a vertical vector (very convenient for linear transformation and spectral)
+  Matrix.mvec(1, 2, 3)  # Create a vertical vector (very convenient for linear transformation and spectral)
   Matrix.zero_vec()        # Get the zero vector
 
   # Checking
