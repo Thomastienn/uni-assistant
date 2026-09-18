@@ -4,7 +4,7 @@ import numpy as np
 
 
 class Matrix:
-    def __init__(self, t=eval, a=None):
+    def __init__(self, a=None, t=eval):
         self.t = t
         if a is None:
             self._get()
@@ -37,7 +37,7 @@ class Matrix:
             for i in range(len(self.a)):
                 for j in range(len(self.a[0])):
                     ans[i][j] = self.a[i][j]*bmat
-        return Matrix(self.t, ans)
+        return Matrix(ans, self.t)
 
     def __add__(self, bmat: "Matrix"):
         return self.add(bmat, 1)
@@ -199,11 +199,11 @@ class Matrix:
             for j in range(len(self.a[0])):
                 ans[i][j] = (self.a[i][j] + (b[i][j]*delta))
 
-        return Matrix(self.t, ans)
+        return Matrix(ans, self.t)
 
     # Transpose
     def T(self):
-        return Matrix(self.t, [list(r) for r in zip(*self.a)])
+        return Matrix([list(r) for r in zip(*self.a)], self.t)
 
     # LLM WORK
     # Matrix Inversion Algorithm
@@ -230,7 +230,7 @@ class Matrix:
                     for k in range(len(self.a)):
                         A[j][k] -= factor * A[i][k]
                         I_MAT[j][k] -= factor * I_MAT[i][k]
-        return Matrix(type(I_MAT[0][0]), I_MAT)
+        return Matrix(I_MAT, type(I_MAT[0][0]))
 
     # Inverse by determinant and adjungate
     def inv(self):
@@ -251,7 +251,7 @@ class Matrix:
         return new_mat*(1/(self.a[0][0]*self.a[1][1] - self.a[0][1]*self.a[1][0]))  # noqa
 
     def rot90(self):
-        return Matrix(self.t, [r[::-1] for r in self.T(self.a)])
+        return Matrix([r[::-1] for r in self.T(self.a)], self.t)
 
     @staticmethod
     def isinv(a: "Matrix", b: "Matrix"):
@@ -262,6 +262,12 @@ class Matrix:
         for r in self.a:
             print(*r)
         print()
+    
+    def __str__(self):
+        s = ""
+        for r in self.a:
+            s += " ".join(map(str, r)) + "\n"
+        return s
 
     # Display as an array
     def print_l(self):
