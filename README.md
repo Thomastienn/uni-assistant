@@ -41,7 +41,7 @@ Random small tools to finish up repeatitive tasks.
 
   # Intialize from 2D arrays
   arr = [[1,2], [3,4]]
-  a = Matrix(a=arr)
+  a = Matrix(arr)
 
   # Show the array
   # Expected output:
@@ -100,7 +100,7 @@ Random small tools to finish up repeatitive tasks.
   a.det3d()       # Find determinant of 3d matrix (Use Sarrus rule)
   a.det()         # A more general use. Find determinant of matrix (any size) (Can switch between using Cofactor Method or Adjungate Method)
   
-  a.solve(Matrix(a=[[1],[2],[3]]))       # Use Cramers' Rule to solve
+  a.solve(Matrix([[1],[2],[3]]))       # Use Cramers' Rule to solve
 
   # Linear transformation
   a.cA()                               # Characteristic Polynomial
@@ -113,7 +113,7 @@ Random small tools to finish up repeatitive tasks.
   def func(vec: Matrix):
      row1 = [vec.vR(0)+2*vec.vR(1)]
      row2 = [vec.vR(0) - vec.vR(1)]
-     return Matrix(a=[row1, row2])
+     return Matrix([row1, row2])
   lt = LinearTransformation(2, 2, func)
   B = [Matrix(), Matrix()]
   D = [Matrix(), Matrix()]
@@ -123,13 +123,13 @@ Random small tools to finish up repeatitive tasks.
   LinearTransformation.get_standard_basis()  # A generator for you to get standard basis in Rn (Ex: for basis in LinearTransformation.get_standard_basis())
 
   lt.get_transform_mat()                     # Get matrix A (the transform matrix of the linear transformation)
-  lt.transform(Matrix(a=[[1],[2]])           # Transform a vector
+  lt.transform(Matrix([[1],[2]])           # Transform a vector
   lt.get_transform_ADB(B,D)                  # Get the transform matrix A (from Rn to Rm where B is the basis in Rn and D is the basis in Rm)
   lt.get_inverse_transform_func()            # You can get the inverse function of the linear transformation from this
-  lt.inv_transform(Matrix(a=[[1],[2]]))      # This one is simimlar to transform but using inverse function
+  lt.inv_transform(Matrix([[1],[2]]))      # This one is simimlar to transform but using inverse function
 
   # Spectral theory
-  a.is_similar(Matrix(a=[[1],[2],[3]]))      # In progress, not guarantee similar now
+  a.is_similar(Matrix([[1],[2],[3]]))      # In progress, not guarantee similar now
   a.eigen_vec(5)                             # Give you the rref solution of the eigen vector from corresponding eigen value
   a.algebraic_multiplicity(5)                # Give you the algebraic multiplicity of the eigen value
   a.geometric_multiplicity(5)                # Give you the geometric multiplicity of the eigen value
