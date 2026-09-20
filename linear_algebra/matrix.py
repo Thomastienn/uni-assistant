@@ -218,17 +218,17 @@ class Matrix:
     def solveSelf(self):
         return _algebra.solveSelf(self)
 
-    def _rowNonZero(self, rows):
-        return _algebra._rowNonZero(self, rows)
-
-    def _rearrange(self, arr):
-        return _algebra._rearrange(self, arr)
-
     def isrref(self, arr=None):
         return _algebra.isrref(self, arr)
 
     def rref(self, tol=1e-12):
         return _algebra.rref(self, tol)
+
+    def col_space(self, tol=1e-12):
+        return _algebra.col_space(self, tol)
+
+    def row_space(self, tol=1e-12):
+        return _algebra.row_space(self, tol)
 
     def is_vector(self):
         return _vectors.is_vector(self)

@@ -149,15 +149,11 @@ def solveSelf(matrix):
     return A.solve(b)
 
 
-def _rowNonZero(matrix, rows):
-    for i in range(len(rows)):
-        if rows[i] != 0:
+def _first_nonzero(row):
+    for i, value in enumerate(row):
+        if value != 0:
             return i
-    return len(rows)
-
-
-def _rearrange(matrix, arr):
-    arr.sort(key=lambda r: matrix._rowNonZero(r))
+    return len(row)
 
 
 def isrref(matrix, arr=None):
@@ -171,7 +167,7 @@ def isrref(matrix, arr=None):
     previous_pivot = -1
     found_zero_row = False
     for row_index, row in enumerate(arr):
-        pivot = matrix._rowNonZero(row)
+        pivot = _first_nonzero(row)
         if pivot == len(row):
             found_zero_row = True
             continue
@@ -227,3 +223,18 @@ def rref(matrix, tol=1e-12):
         pivot_row += 1
 
     return _matrix.Matrix(A, t=Fraction if exact else matrix.t)
+
+
+def col_space(matrix, tol=1e-12):
+    reduced = matrix.rref(tol)
+    basis = []
+    for row in reduced:
+        pivot = _first_nonzero(row)
+        if pivot < len(row):
+            basis.append(_matrix.Matrix.mvec(*(r[pivot] for r in matrix), t=matrix.t))
+    return basis
+
+
+def row_space(matrix, tol=1e-12):
+    reduced = matrix.rref(tol)
+    return [_matrix.Matrix.mvec(*row, t=reduced.t) for row in reduced if any(row)]
