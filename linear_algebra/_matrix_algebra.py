@@ -1,63 +1,70 @@
+from __future__ import annotations
+
 from fractions import Fraction
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from linear_algebra._matrix_types import Row, Rows, ScalarParser
+
+if TYPE_CHECKING:
+    from linear_algebra.matrix import Matrix
 
 
 def im(n: int, t: ScalarParser = eval) -> Rows:
     return [[t("1") if i == j else t("0") for j in range(n)] for i in range(n)]
 
 
-def matmul(a: Rows, b: Rows, t: ScalarParser = eval) -> Rows:
+def matmul(a: Matrix, b: Matrix) -> Matrix:
     assert len(a[0]) == len(b), "not matching size"
-    result = [[t("0")] * len(b[0]) for _ in range(len(a))]
+    result = [[a.t("0")] * len(b[0]) for _ in range(len(a))]
     for i in range(len(a)):
         for j in range(len(b[0])):
             for k in range(len(b)):
                 result[i][j] += a[i][k] * b[k][j]
-    return result
+    return a._new(result)
 
 
-def scale(rows: Rows, scalar: Any) -> Rows:
-    return [[value * scalar for value in row] for row in rows]
+def scale(rows: Matrix, scalar: Any) -> Matrix:
+    return rows._new([[value * scalar for value in row] for row in rows])
 
 
-def add(a: Rows, b: Rows, delta: Any = 1) -> Rows | None:
+def add(a: Matrix, b: Matrix, delta: Any = 1) -> Matrix | None:
     if len(a) != len(b) or len(a[0]) != len(b[0]):
         return None
-    return [[a[i][j] + b[i][j] * delta for j in range(len(a[0]))]
-            for i in range(len(a))]
+    return a._new([
+        [a[i][j] + b[i][j] * delta for j in range(len(a[0]))]
+        for i in range(len(a))
+    ])
 
 
-def transpose(rows: Rows) -> Rows:
-    return [list(row) for row in zip(*rows)]
+def transpose(rows: Matrix) -> Matrix:
+    return rows._new([list(row) for row in zip(*rows)])
 
 
-def change_col(rows: Rows, acol: int, bcol: int, other: Rows) -> Rows:
+def change_col(rows: Matrix, acol: int, bcol: int, other: Matrix) -> Matrix:
     result = [row[:] for row in rows]
     for i in range(len(rows)):
         result[i][acol] = other[i][bcol]
-    return result
+    return rows._new(result)
 
 
-def concat(a: Rows, b: Rows) -> Rows:
+def concat(a: Matrix, b: Matrix) -> Matrix:
     assert len(a) == len(b), "not matching size"
-    return [row + other for row, other in zip(a, b)]
+    return a._new([row + other for row, other in zip(a, b)])
 
 
-def det2d(matrix: Rows) -> Any:
+def det2d(matrix: Matrix) -> Any:
     n, m = len(matrix), len(matrix[0])
     assert n == 2 and m == 2
 
     return matrix[0][0] * matrix[1][1] - matrix[0][1] * matrix[1][0]
 
 
-def det3d(matrix: Rows, t: ScalarParser = eval) -> Any:
+def det3d(matrix: Matrix) -> Any:
     assert len(matrix) == len(matrix[0]) == 3
-    s = t("0")
+    s = matrix.t("0")
     for off in range(3):
-        pro1 = t("1")
-        pro2 = t("1")
+        pro1 = matrix.t("1")
+        pro2 = matrix.t("1")
         for i in range(3):
             pro1 *= matrix[i][(i + off) % 3]
             pro2 *= matrix[i][(off - i) % 3]
@@ -69,7 +76,7 @@ def sign_cof(row: int, col: int) -> int:
     return -1 if (row + col) & 1 else 1
 
 
-def minor(matrix: Rows, row: int, col: int, t: ScalarParser = eval) -> Any:
+def minor(matrix: Matrix, row: int, col: int) -> Any:
     n, m = len(matrix), len(matrix[0])
     new_a = []
     for i in range(n):
@@ -79,34 +86,34 @@ def minor(matrix: Rows, row: int, col: int, t: ScalarParser = eval) -> Any:
             if not new_a or len(new_a[-1]) == m - 1:
                 new_a.append([])
             new_a[-1].append(matrix[i][j])
-    return det(new_a, t)
+    return det(matrix._new(new_a))
 
 
-def cof(matrix: Rows, row: int, col: int, t: ScalarParser = eval) -> Any:
-    return sign_cof(row, col) * minor(matrix, row, col, t)
+def cof(matrix: Matrix, row: int, col: int) -> Any:
+    return sign_cof(row, col) * minor(matrix, row, col)
 
 
-def minorMat(matrix: Rows, t: ScalarParser = eval) -> Rows:
+def minorMat(matrix: Matrix) -> Matrix:
     new = [[0] * len(matrix[0]) for _ in range(len(matrix))]
     for i in range(len(matrix)):
         for j in range(len(matrix[0])):
-            new[i][j] = minor(matrix, i, j, t)
-    return new
+            new[i][j] = minor(matrix, i, j)
+    return matrix._new(new)
 
 
-def cofMat(matrix: Rows, t: ScalarParser = eval) -> Rows:
+def cofMat(matrix: Matrix) -> Matrix:
     new = [[0] * len(matrix[0]) for _ in range(len(matrix))]
     for i in range(len(matrix)):
         for j in range(len(matrix[0])):
-            new[i][j] = cof(matrix, i, j, t)
-    return new
+            new[i][j] = cof(matrix, i, j)
+    return matrix._new(new)
 
 
-def adj(matrix: Rows, t: ScalarParser = eval) -> Rows:
-    return transpose(cofMat(matrix, t))
+def adj(matrix: Matrix) -> Matrix:
+    return transpose(cofMat(matrix))
 
 
-def det(matrix: Rows, t: ScalarParser = eval) -> Any:
+def det(matrix: Matrix) -> Any:
     if len(matrix) == 0:
         return 1
     n, m = len(matrix), len(matrix[0])
@@ -114,13 +121,13 @@ def det(matrix: Rows, t: ScalarParser = eval) -> Any:
     if n == 2:
         return det2d(matrix)
     if n == 3:
-        return det3d(matrix, t)
-    return matmul(matrix, adj(matrix, t), t)[0][0]
+        return det3d(matrix)
+    return matmul(matrix, adj(matrix))[0][0]
 
 
-def inv_MIA(matrix: Rows, t: ScalarParser = eval) -> Rows:
+def inv_MIA(matrix: Matrix) -> Matrix:
     A: Rows = [row[:] for row in matrix]
-    I_MAT = im(len(matrix), t)
+    I_MAT = im(len(matrix), matrix.t)
     for i in range(len(matrix)):
         pivot = A[i][i]
         if pivot == 0:
@@ -141,48 +148,48 @@ def inv_MIA(matrix: Rows, t: ScalarParser = eval) -> Rows:
                 for k in range(len(matrix)):
                     A[j][k] -= factor * A[i][k]
                     I_MAT[j][k] -= factor * I_MAT[i][k]
-    return I_MAT
+    return matrix._new(I_MAT)
 
 
-def inv(matrix: Rows, t: ScalarParser = eval) -> Rows:
+def inv(matrix: Matrix) -> Matrix:
     if len(matrix) == 0:
-        return []
+        return matrix._new([])
     assert len(matrix) == len(matrix[0]), "Must be a square"
     if len(matrix) == 1:
         assert matrix[0][0] != 0, "No inverse"
-        return [[Fraction(1, matrix[0][0])]]
+        return matrix._new([[Fraction(1, matrix[0][0])]])
     if len(matrix) == 2:
         return inv2d(matrix)
-    return scale(adj(matrix, t), 1 / det(matrix, t))
+    return scale(adj(matrix), 1 / det(matrix))
 
 
-def inv2d(matrix: Rows) -> Rows:
+def inv2d(matrix: Matrix) -> Matrix:
     new_mat = [[matrix[1][1], -matrix[0][1]], [-matrix[1][0], matrix[0][0]]]
-    return scale(new_mat, 1 / det2d(matrix))
+    return scale(matrix._new(new_mat), 1 / det2d(matrix))
 
 
-def isinv(a: Rows, b: Rows, t: ScalarParser = eval, other_t: ScalarParser = eval) -> bool:
+def isinv(a: Matrix, b: Matrix) -> bool:
     n = len(a)
     if not n or len(b) != n:
         return False
     if any(len(row) != n for matrix in (a, b) for row in matrix):
         return False
-    identity = im(n, t)
-    return matmul(a, b, t) == identity and matmul(b, a, other_t) == identity
+    identity = im(n, a.t)
+    return matmul(a, b) == identity and matmul(b, a) == identity
 
 
-def solve(matrix: Rows, b: Rows, t: ScalarParser = eval) -> Rows:
-    detA = det(matrix, t)
+def solve(matrix: Matrix, b: Matrix) -> Matrix:
+    detA = det(matrix)
     new_a = [
-        Fraction(det(change_col(matrix, i, 0, b), t), detA) for i in range(len(matrix))
+        Fraction(det(change_col(matrix, i, 0, b)), detA) for i in range(len(matrix))
     ]
-    return [new_a]
+    return matrix._new([new_a])
 
 
-def solveSelf(matrix: Rows, t: ScalarParser = eval) -> Rows:
-    A = [row[:-1] for row in matrix]
-    b = [[row[-1]] for row in matrix]
-    return solve(A, b, t)
+def solveSelf(matrix: Matrix) -> Matrix:
+    A = matrix._new([row[:-1] for row in matrix])
+    b = matrix._new([[row[-1]] for row in matrix])
+    return solve(A, b)
 
 
 def _first_nonzero(row: Row) -> int:
@@ -213,12 +220,12 @@ def isrref(arr: Rows) -> bool:
     return True
 
 
-def rref(matrix: Rows, t: ScalarParser = eval, tol: float = 1e-12) -> tuple[Rows, ScalarParser]:
+def rref(matrix: Matrix, tol: float = 1e-12) -> Matrix:
     if tol < 0:
         raise ValueError("Tolerance must be nonnegative.")
     A: Rows = [row[:] for row in matrix]
     if not A:
-        return [], t
+        return matrix._new([])
     rows, cols = len(A), len(A[0])
     if any(len(row) != cols for row in A):
         raise ValueError("Matrix rows must have the same length.")
@@ -255,19 +262,35 @@ def rref(matrix: Rows, t: ScalarParser = eval, tol: float = 1e-12) -> tuple[Rows
             A[i][col] = 0
         pivot_row += 1
 
-    return A, Fraction if exact else t
+    return matrix._new(A, Fraction if exact else matrix.t)
 
 
-def col_space(matrix: Rows, t: ScalarParser = eval, tol: float = 1e-12) -> list[Rows]:
-    reduced, _ = rref(matrix, t, tol)
+def col_space(matrix: Matrix, tol: float = 1e-12) -> list[Matrix]:
+    reduced = rref(matrix, tol)
     basis = []
     for row in reduced:
         pivot = _first_nonzero(row)
         if pivot < len(row):
-            basis.append([[r[pivot]] for r in matrix])
+            basis.append(matrix._new([[r[pivot]] for r in matrix]))
     return basis
 
 
-def row_space(matrix: Rows, t: ScalarParser = eval, tol: float = 1e-12) -> tuple[list[Rows], ScalarParser]:
-    reduced, result_type = rref(matrix, t, tol)
-    return [[[value] for value in row] for row in reduced if any(row)], result_type
+def row_space(matrix: Matrix, tol: float = 1e-12) -> list[Matrix]:
+    reduced = rref(matrix, tol)
+    return [reduced._new([[value] for value in row]) for row in reduced if any(row)]
+
+
+def null_space(matrix: Matrix, tol: float = 1e-12) -> list[Matrix]:
+    reduced = rref(matrix, tol)
+    cols = len(reduced[0]) if reduced else 0
+    pivots = {_first_nonzero(row): row for row in reduced if any(row)}
+    basis = []
+    for free_col in range(cols):
+        if free_col in pivots:
+            continue
+        vector = [[reduced.t("0")] for _ in range(cols)]
+        vector[free_col][0] = reduced.t("1")
+        for pivot, row in pivots.items():
+            vector[pivot][0] = -row[free_col]
+        basis.append(reduced._new(vector))
+    return basis

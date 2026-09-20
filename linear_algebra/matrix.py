@@ -49,10 +49,8 @@ class Matrix:
 
     def __mul__(self, bmat: Any) -> Matrix:
         if isinstance(bmat, Matrix):
-            rows = _algebra.matmul(self.a, bmat.a, self.t)
-        else:
-            rows = _algebra.scale(self.a, bmat)
-        return Matrix(rows, self.t)
+            return _algebra.matmul(self, bmat)
+        return _algebra.scale(self, bmat)
 
     def __rmul__(self, scalar: Any) -> Matrix:
         return self * scalar
@@ -74,14 +72,16 @@ class Matrix:
         return iden
 
     def add(self, bmat: Matrix, delta: Any = 1) -> Matrix | None:
-        rows = _algebra.add(self.a, bmat.a, delta)
-        return None if rows is None else Matrix(rows, self.t)
+        return _algebra.add(self, bmat, delta)
+
+    def _new(self, rows: Rows, t: ScalarParser | None = None) -> Matrix:
+        return Matrix(rows, self.t if t is None else t)
 
     def _copyArr(self) -> Rows:
         return [row[:] for row in self]
 
     def _copyMat(self) -> Matrix:
-        return Matrix(self._copyArr(), t=self.t)
+        return self._new(self._copyArr())
 
     def removeRow(self, row: int) -> None:
         self.a.pop(row)
@@ -101,21 +101,21 @@ class Matrix:
         new_a = self._copyArr()
         other_a = other._copyArr()
         new_a[arow] = other_a[brow]
-        return Matrix(new_a, t=self.t)
+        return self._new(new_a)
 
     def changeCol(self, acol: int, bcol: int, other: Matrix) -> Matrix:
-        return Matrix(_algebra.change_col(self.a, acol, bcol, other.a), self.t)
+        return _algebra.change_col(self, acol, bcol, other)
 
     def swapRow(self, arow: int, brow: int) -> Matrix:
         new_a = self._copyArr()
         new_a[arow], new_a[brow] = new_a[brow], new_a[arow]
-        return Matrix(new_a, t=self.t)
+        return self._new(new_a)
 
     def T(self) -> Matrix:
-        return Matrix(_algebra.transpose(self.a), self.t)
+        return _algebra.transpose(self)
 
     def rot90(self) -> Matrix:
-        return Matrix([r[::-1] for r in self.T()], self.t)
+        return self._new([r[::-1] for r in self.T()])
 
     @overload
     def concat(self, bmat: Matrix, in_place: Literal[False] = False) -> Matrix: ...
@@ -128,7 +128,7 @@ class Matrix:
 
     def concat(self, bmat: Matrix, in_place: bool = False) -> Matrix | None:
         if not in_place:
-            return Matrix(_algebra.concat(self.a, bmat.a), self.t)
+            return _algebra.concat(self, bmat)
         if len(bmat) != len(self):
             assert False, "not matching size"
         for i in range(len(self)):
@@ -171,106 +171,106 @@ class Matrix:
         print(str(self.a).replace(" ", ""))
 
     def det2d(self) -> Any:
-        return _algebra.det2d(self.a)
+        return _algebra.det2d(self)
 
     def det3d(self) -> Any:
-        return _algebra.det3d(self.a, self.t)
+        return _algebra.det3d(self)
 
     def sign_cof(self, row: int, col: int) -> int:
         return _algebra.sign_cof(row, col)
 
     def minor(self, row: int, col: int) -> Any:
-        return _algebra.minor(self.a, row, col, self.t)
+        return _algebra.minor(self, row, col)
 
     def cof(self, row: int, col: int) -> Any:
-        return _algebra.cof(self.a, row, col, self.t)
+        return _algebra.cof(self, row, col)
 
     def minorMat(self) -> Matrix:
-        return Matrix(_algebra.minorMat(self.a, self.t), self.t)
+        return _algebra.minorMat(self)
 
     def cofMat(self) -> Matrix:
-        return Matrix(_algebra.cofMat(self.a, self.t), self.t)
+        return _algebra.cofMat(self)
 
     def adj(self) -> Matrix:
-        return Matrix(_algebra.adj(self.a, self.t), self.t)
+        return _algebra.adj(self)
 
     def det(self) -> Any:
-        return _algebra.det(self.a, self.t)
+        return _algebra.det(self)
 
     def inv_MIA(self) -> Matrix:
-        return Matrix(_algebra.inv_MIA(self.a, self.t), self.t)
+        return _algebra.inv_MIA(self)
 
     def inv(self) -> Matrix:
-        return Matrix(_algebra.inv(self.a, self.t), self.t)
+        return _algebra.inv(self)
 
     def inv2d(self) -> Matrix:
-        return Matrix(_algebra.inv2d(self.a), self.t)
+        return _algebra.inv2d(self)
 
     @staticmethod
     def isinv(a: Matrix, b: Matrix) -> bool:
         if not isinstance(a, Matrix) or not isinstance(b, Matrix):
             return False
-        return _algebra.isinv(a.a, b.a, a.t, b.t)
+        return _algebra.isinv(a, b)
 
     def solve(self, b: Matrix) -> Matrix:
-        return Matrix(_algebra.solve(self.a, b.a, self.t))
+        return _algebra.solve(self, b)
 
     def solveSelf(self) -> Matrix:
-        return Matrix(_algebra.solveSelf(self.a, self.t))
+        return _algebra.solveSelf(self)
 
     def isrref(self, arr: Rows | None = None) -> bool:
         return _algebra.isrref(self.a if arr is None else arr)
 
     def rref(self, tol: float = 1e-12) -> Matrix:
-        rows, t = _algebra.rref(self.a, self.t, tol)
-        return Matrix(rows, t)
+        return _algebra.rref(self, tol)
 
     def col_space(self, tol: float = 1e-12) -> list[Matrix]:
-        return [Matrix(rows, self.t) for rows in _algebra.col_space(self.a, self.t, tol)]
+        return _algebra.col_space(self, tol)
 
     def row_space(self, tol: float = 1e-12) -> list[Matrix]:
-        basis, t = _algebra.row_space(self.a, self.t, tol)
-        return [Matrix(rows, t) for rows in basis]
+        return _algebra.row_space(self, tol)
+
+    def null_space(self, tol: float = 1e-12) -> list[Matrix]:
+        return _algebra.null_space(self, tol)
 
     def is_vector(self) -> bool:
-        return _vectors.is_vector(self.a)
+        return _vectors.is_vector(self)
 
     def vR(self, pos: int) -> Any:
-        return _vectors.vR(self.a, pos)
+        return _vectors.vR(self, pos)
 
     def dot(self, other: Matrix) -> Any:
-        return _vectors.dot(self.a, other.a)
+        return _vectors.dot(self, other)
 
     def cross(self, other: Matrix) -> Matrix:
-        return Matrix(_vectors.cross(self.a, other.a), self.t)
+        return _vectors.cross(self, other)
 
     def cB(self, basis: list[Matrix]) -> Matrix:
-        return Matrix(_vectors.cB(self.a, [vector.a for vector in basis], self.t))
+        return _vectors.cB(self, basis)
 
     def in_span(self, basis: list[Matrix]) -> bool:
-        return _vectors.in_span(self.a, [vector.a for vector in basis])
+        return _vectors.in_span(self, basis)
 
     def cA(self) -> Poly:
-        return _spectral.cA(self.a, self.t)
+        return _spectral.cA(self)
 
     def eigen_vals(self) -> list[Any]:
-        return _spectral.eigen_vals(self.a, self.t)
+        return _spectral.eigen_vals(self)
 
     def is_similar(self, other: Matrix) -> bool:
-        return _spectral.is_similar(self.a, other.a, self.t, other.t)
+        return _spectral.is_similar(self, other)
 
     def eigen_vec(self, eigen_val: Any) -> Matrix:
-        rows, t = _spectral.eigen_vec(self.a, eigen_val, self.t)
-        return Matrix(rows, t)
+        return _spectral.eigen_vec(self, eigen_val)
 
     def algebraic_multiplicity(self, eigen_val: Any) -> int:
-        return _spectral.algebraic_multiplicity(self.a, eigen_val, self.t)
+        return _spectral.algebraic_multiplicity(self, eigen_val)
 
     def geometric_multiplicity(self, eigen_val: Any) -> int:
-        return _spectral.geometric_multiplicity(self.a, eigen_val, self.t)
+        return _spectral.geometric_multiplicity(self, eigen_val)
 
     def is_diagnolizable(self) -> bool:
-        return _spectral.is_diagnolizable(self.a, self.t)
+        return _spectral.is_diagnolizable(self)
 
     def diag(self) -> Matrix:
-        return Matrix(_spectral.diag(self.a, self.t), self.t)
+        return _spectral.diag(self)
