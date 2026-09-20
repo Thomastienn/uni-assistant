@@ -1,79 +1,69 @@
+from typing import Any
+
 import numpy as np
-from linear_algebra import matrix as _matrix
+from linear_algebra import _matrix_algebra as algebra
+from linear_algebra._matrix_types import Row, Rows, ScalarParser
 from linear_algebra.polynomial import Poly
 
 
-def cA(matrix):
-    if len(matrix) != len(matrix[0]):
-        assert False, "need to be nxn"
-    lambdaa = Poly("x")
-    mat = (_matrix.Matrix.imat(len(matrix), matrix.t) * lambdaa) - matrix
-
-    return mat.det()
+def cA(matrix: Rows, t: ScalarParser = eval) -> Poly:
+    assert len(matrix) == len(matrix[0]), "need to be nxn"
+    mat = algebra.add(algebra.scale(algebra.im(len(matrix), t), Poly("x")), matrix, -1)
+    assert mat is not None
+    return algebra.det(mat, t)
 
 
-def eigen_vals(matrix):
-    equal = matrix.cA()
-    roots = np.roots(equal.coef[::-1])
-    ret = [round(float(x.real), 3) if abs(
-        x.imag) < 1e-5 else x for x in roots]
-    return ret
+def eigen_vals(matrix: Rows, t: ScalarParser = eval) -> list[Any]:
+    equal = cA(matrix, t)
+    coefficients: Row = equal.coef[::-1]
+    roots = np.roots(coefficients)
+    return [round(float(x.real), 3) if abs(x.imag) < 1e-5 else x for x in roots]
 
 
-def is_similar(matrix, other):
+def is_similar(matrix: Rows, other: Rows, t: ScalarParser = eval,
+               other_t: ScalarParser = eval) -> bool:
     # Equal eigenvalues are necessary, but Jordan structure is not checked.
     n, m = len(matrix), len(matrix[0])
     k, l = len(other), len(other[0])
     if n != k or m != l:
         return False
-    if matrix.det() != other.det():
+    if algebra.det(matrix, t) != algebra.det(other, other_t):
         return False
-    return sorted(matrix.eigen_vals()) == sorted(other.eigen_vals())
+    return sorted(eigen_vals(matrix, t)) == sorted(eigen_vals(other, other_t))
 
 
-def eigen_vec(matrix, eigen_val):
+def eigen_vec(matrix: Rows, eigen_val: Any,
+              t: ScalarParser = eval) -> tuple[Rows, ScalarParser]:
     # Returns the reduced augmented system, not an eigenvector basis.
-    if len(matrix) != len(matrix[0]):
-        assert False, "need to be nxn"
-
-    solve_mat = _matrix.Matrix.imat(len(matrix), matrix.t)
-    solve_mat = solve_mat * eigen_val - matrix
-    zero_vec = _matrix.Matrix.zero_vec(len(matrix), matrix.t)
-
-    res_mat = solve_mat.concat(zero_vec)
-    return res_mat.rref()
+    assert len(matrix) == len(matrix[0]), "need to be nxn"
+    solve_mat = algebra.add(algebra.scale(algebra.im(len(matrix), t), eigen_val), matrix, -1)
+    assert solve_mat is not None
+    augmented = algebra.concat(solve_mat, [[t("0")] for _ in matrix])
+    return algebra.rref(augmented, t)
 
 
-def algebraic_multiplicity(matrix, eigen_val):
-    return matrix.eigen_vals().count(eigen_val)
+def algebraic_multiplicity(matrix: Rows, eigen_val: Any, t: ScalarParser = eval) -> int:
+    return eigen_vals(matrix, t).count(eigen_val)
 
 
-def geometric_multiplicity(matrix, eigen_val):
-    cnt = 0
-    for row in matrix.eigen_vec(eigen_val):
-        zeros = 0
-        for c in row:
-            if c == 0:
-                zeros += 1
-        cnt += zeros == len(row)
-
-    return cnt
+def geometric_multiplicity(matrix: Rows, eigen_val: Any, t: ScalarParser = eval) -> int:
+    reduced, _ = eigen_vec(matrix, eigen_val, t)
+    return sum(all(value == 0 for value in row) for row in reduced)
 
 
-def is_diagnolizable(matrix):
-    for eigen_val in matrix.eigen_vals():
-        alg_mult = matrix.algebraic_multiplicity(eigen_val)
-        geo_mult = matrix.geometric_multiplicity(eigen_val)
+def is_diagnolizable(matrix: Rows, t: ScalarParser = eval) -> bool:
+    for eigen_val in eigen_vals(matrix, t):
+        alg_mult = algebraic_multiplicity(matrix, eigen_val, t)
+        geo_mult = geometric_multiplicity(matrix, eigen_val, t)
         if alg_mult != geo_mult:
             return False
     return True
 
 
-def diag(matrix):
-    if not matrix.is_diagnolizable():
-        assert False, "not diagnolizable"
-    eigenval = matrix.eigen_vals()
-    new_a = _matrix.Matrix.imat(len(matrix), matrix.t)
+def diag(matrix: Rows, t: ScalarParser = eval) -> Rows:
+    assert is_diagnolizable(matrix, t), "not diagnolizable"
+    eigenval = eigen_vals(matrix, t)
+    result = algebra.im(len(matrix), t)
     for i in range(len(matrix)):
-        new_a[i][i] = eigenval[i]
-    return _matrix.Matrix(new_a, t=matrix.t)
+        result[i][i] = eigenval[i]
+    return result
