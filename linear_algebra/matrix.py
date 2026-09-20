@@ -83,6 +83,22 @@ class Matrix:
     def _copyMat(self) -> Matrix:
         return self._new(self._copyArr())
 
+    @overload
+    def astype(self, t: ScalarParser, in_place: Literal[False] = False) -> Matrix: ...
+
+    @overload
+    def astype(self, t: ScalarParser, in_place: Literal[True]) -> None: ...
+
+    @overload
+    def astype(self, t: ScalarParser, in_place: bool) -> Matrix | None: ...
+
+    def astype(self, t: ScalarParser, in_place: bool = False) -> Matrix | None:
+        rows = [[t(value) for value in row] for row in self]
+        if not in_place:
+            return self._new(rows, t)
+        self.a = rows
+        self.t = t
+
     def removeRow(self, row: int) -> None:
         self.a.pop(row)
 
@@ -161,6 +177,9 @@ class Matrix:
         for r in self:
             s += " ".join(map(str, r)) + "\n"
         return s
+
+    def __repr__(self) -> str:
+        return f"Matrix({self.a})"
 
     def show(self) -> None:
         for r in self:
