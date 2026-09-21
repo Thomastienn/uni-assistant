@@ -61,6 +61,11 @@ class Matrix:
     def __sub__(self, bmat: Matrix) -> Matrix | None:
         return self.add(bmat, -1)
 
+    def __or__(self, other: Matrix) -> Matrix:
+        if not isinstance(other, Matrix):
+            return NotImplemented
+        return self.concat(other)
+
     def __pow__(self, n: int) -> Matrix:
         amat = self._copyMat()
         iden = Matrix.imat(len(self), self.t)
