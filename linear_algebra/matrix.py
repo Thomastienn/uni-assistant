@@ -245,17 +245,17 @@ class Matrix:
     def isrref(self, arr: Rows | None = None) -> bool:
         return _algebra.isrref(self.a if arr is None else arr)
 
-    def rref(self, tol: float = 1e-12) -> Matrix:
-        return _algebra.rref(self, tol)
+    def rref(self) -> Matrix:
+        return _algebra.rref(self)
 
-    def col_space(self, tol: float = 1e-12) -> list[Matrix]:
-        return _algebra.col_space(self, tol)
+    def col_space(self) -> list[Matrix]:
+        return _algebra.col_space(self)
 
-    def row_space(self, tol: float = 1e-12) -> list[Matrix]:
-        return _algebra.row_space(self, tol)
+    def row_space(self) -> list[Matrix]:
+        return _algebra.row_space(self)
 
-    def null_space(self, tol: float = 1e-12) -> list[Matrix]:
-        return _algebra.null_space(self, tol)
+    def null_space(self) -> list[Matrix]:
+        return _algebra.null_space(self)
 
     def is_vector(self) -> bool:
         return _vectors.is_vector(self)

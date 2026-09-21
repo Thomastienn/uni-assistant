@@ -3,6 +3,7 @@ from __future__ import annotations
 from fractions import Fraction
 from typing import TYPE_CHECKING, Any
 
+from linear_algebra import config
 from linear_algebra._matrix_types import Row, Rows, ScalarParser
 
 if TYPE_CHECKING:
@@ -220,7 +221,8 @@ def isrref(arr: Rows) -> bool:
     return True
 
 
-def rref(matrix: Matrix, tol: float = 1e-12) -> Matrix:
+def rref(matrix: Matrix) -> Matrix:
+    tol = config.TOLERANCE
     if tol < 0:
         raise ValueError("Tolerance must be nonnegative.")
     A: Rows = [row[:] for row in matrix]
@@ -265,8 +267,8 @@ def rref(matrix: Matrix, tol: float = 1e-12) -> Matrix:
     return matrix._new(A, Fraction if exact else matrix.t)
 
 
-def col_space(matrix: Matrix, tol: float = 1e-12) -> list[Matrix]:
-    reduced = rref(matrix, tol)
+def col_space(matrix: Matrix) -> list[Matrix]:
+    reduced = rref(matrix)
     basis = []
     for row in reduced:
         pivot = _first_nonzero(row)
@@ -275,13 +277,13 @@ def col_space(matrix: Matrix, tol: float = 1e-12) -> list[Matrix]:
     return basis
 
 
-def row_space(matrix: Matrix, tol: float = 1e-12) -> list[Matrix]:
-    reduced = rref(matrix, tol)
+def row_space(matrix: Matrix) -> list[Matrix]:
+    reduced = rref(matrix)
     return [reduced._new([[value] for value in row]) for row in reduced if any(row)]
 
 
-def null_space(matrix: Matrix, tol: float = 1e-12) -> list[Matrix]:
-    reduced = rref(matrix, tol)
+def null_space(matrix: Matrix) -> list[Matrix]:
+    reduced = rref(matrix)
     cols = len(reduced[0]) if reduced else 0
     pivots = {_first_nonzero(row): row for row in reduced if any(row)}
     basis = []

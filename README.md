@@ -78,6 +78,11 @@ Random small tools to finish up repeatitive tasks.
   a.rot90()   # Rotate clockwise 90 degrees
   a.concat(b) # Connect 2 matrices to create augmented matrix (Concat sideway) (in_place=False by default)
   a.rref()    # Get the Reduced Row Echelon Form of the matrix
+  a.null_space() # Basis for Ax = 0; use A itself, without appending a zero column
+
+  # Shared absolute tolerance for floating-point RREF and space calculations
+  from linear_algebra import config
+  config.TOLERANCE = 1e-12  # Integer/Fraction calculations remain exact
 
   # Static, global methods
   Matrix.isinv(a, b)       # Check if 2 matrices are inverses
