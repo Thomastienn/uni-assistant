@@ -1,61 +1,92 @@
 from __future__ import annotations
 
+from itertools import combinations
+from numbers import Real
 from typing import TYPE_CHECKING, Any
 
-from linear_algebra import _matrix_algebra as algebra
+from sympy import Expr
+
+from linear_algebra import config
+from linear_algebra._matrix_algebra import divide, is_zero
 
 if TYPE_CHECKING:
     from linear_algebra.matrix import Matrix
 
 
-def is_vector(matrix: Matrix) -> bool:
-    return all(len(row) == 1 for row in matrix)
+def require_vectors(a: Matrix, b: Matrix) -> None:
+    if not a.is_vector() or not b.is_vector() or a.shape != b.shape:
+        raise ValueError("Expected column vectors of the same size.")
 
 
-def vR(matrix: Matrix, pos: int) -> Any:
-    assert is_vector(matrix), "not a vector, cannot use"
-    return matrix[pos][0]
+def dot(a: Matrix, b: Matrix) -> Any:
+    require_vectors(a, b)
+    return sum(left[0] * right[0] for left, right in zip(a, b))
 
 
-def dot(matrix: Matrix, other: Matrix) -> Any:
-    if not is_vector(matrix) or not is_vector(other) or len(matrix) != len(other):
-        raise ValueError("Dot product requires column vectors of the same size.")
-    return sum(a[0] * b[0] for a, b in zip(matrix, other))
+def cross(a: Matrix, b: Matrix) -> Matrix:
+    require_vectors(a, b)
+    if a.nrows != 3:
+        raise ValueError("Cross product requires 3D vectors.")
+    x, y, z = (row[0] for row in a)
+    u, v, w = (row[0] for row in b)
+    return a.vector(y * w - z * v, z * u - x * w, x * v - y * u)
 
 
-def cross(matrix: Matrix, other: Matrix) -> Matrix:
-    if not is_vector(matrix) or not is_vector(other) or len(matrix) != 3 or len(other) != 3:
-        raise ValueError("Cross product requires two 3D column vectors.")
-    x, y, z = (row[0] for row in matrix)
-    other_x, other_y, other_z = (row[0] for row in other)
-    return matrix._new([
-        [y * other_z - z * other_y],
-        [z * other_x - x * other_z],
-        [x * other_y - y * other_x],
-    ])
+def require_real(vector: Matrix) -> None:
+    if not vector.is_vector():
+        raise ValueError("Expected a column vector.")
+    for row in vector:
+        value = row[0]
+        if not isinstance(value, Real) and not (isinstance(value, Expr) and value.is_real is True):
+            raise ValueError("Orthogonality and projection require real-valued vectors.")
 
 
-def cB(matrix: Matrix, basis: list[Matrix]) -> Matrix:
-    solve_mat = matrix._new([[] for _ in range(len(basis[0]))])
-    for basis_vec in basis:
-        solve_mat = algebra.concat(solve_mat, basis_vec)
-    return algebra.transpose(algebra.solve(solve_mat, matrix))
+def is_orthogonal(vectors: list[Matrix]) -> bool:
+    if config.TOLERANCE < 0:
+        raise ValueError("Tolerance must be nonnegative.")
+    for vector in vectors:
+        require_real(vector)
+        require_vectors(vectors[0], vector)
+    return all(is_zero(dot(a, b)) for a, b in combinations(vectors, 2))
 
 
-def in_span(matrix: Matrix, basis: list[Matrix]) -> bool:
-    if not is_vector(matrix):
+def orthogonal_coordinates(vector: Matrix, basis: list[Matrix]) -> Matrix:
+    require_real(vector)
+    if not is_orthogonal(basis):
+        raise ValueError("Basis vectors must be orthogonal.")
+    coefficients = []
+    for direction in basis:
+        require_vectors(vector, direction)
+        denominator = dot(direction, direction)
+        if is_zero(denominator):
+            raise ValueError("Basis vectors must be nonzero.")
+        coefficients.append(divide(dot(vector, direction), denominator))
+    return vector.vector(*coefficients)
+
+
+def project(vector: Matrix, onto: Matrix) -> Matrix:
+    coefficient = orthogonal_coordinates(vector, [onto])[0][0]
+    return onto * coefficient
+
+
+def coordinates(vector: Matrix, basis: list[Matrix]) -> Matrix:
+    if not vector.is_vector():
         raise ValueError("Target must be a column vector.")
-    for vector in basis:
-        if not is_vector(vector) or len(vector) != len(matrix):
-            raise ValueError("Basis vectors must be column vectors matching the target size.")
-    if not basis or not matrix:
-        return all(row[0] == 0 for row in matrix)
-    augmented = basis[0]._copyMat()
-    for vector in basis[1:]:
-        augmented = algebra.concat(augmented, vector)
-    augmented = algebra.concat(augmented, matrix)
-    reduced = algebra.rref(augmented)
-    for row in reduced:
-        if all(value == 0 for value in row[:-1]) and row[-1] != 0:
-            return False
-    return True
+    for direction in basis:
+        require_vectors(vector, direction)
+    if not basis:
+        if all(is_zero(row[0]) for row in vector):
+            return vector._new([])
+        raise ValueError("Target is outside the empty span.")
+    return vector.from_columns(basis).solve(vector)
+
+
+def in_span(vector: Matrix, basis: list[Matrix]) -> bool:
+    if not vector.is_vector():
+        raise ValueError("Target must be a column vector.")
+    for direction in basis:
+        require_vectors(vector, direction)
+    if not basis:
+        return all(is_zero(row[0]) for row in vector)
+    columns = vector.from_columns(basis)
+    return columns.rank() == columns.augment(vector).rank()
