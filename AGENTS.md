@@ -7,6 +7,15 @@ to understand, modify, and debug the mathematics by reading the implementation.
 Prefer a clear algorithm with visible steps over a shorter opaque solution.
 Use the current code and README as the source of truth for the public API.
 
+## Keeping these instructions current
+
+- When the owner explicitly adds or changes an ongoing project preference,
+  update this AGENTS.md as part of the same task so future agents follow it.
+- Replace outdated or conflicting guidance rather than appending contradictory
+  rules. Keep updates focused and preserve unrelated instructions.
+- Distinguish ongoing preferences from one-task exceptions; do not turn a
+  temporary request or an inferred preference into a permanent rule.
+
 ## Before changing code
 
 - Read the relevant README section, implementation, and callers. Check the
@@ -105,9 +114,18 @@ their own APIs. Do not rewrite them as a side effect of matrix work.
   references; do not add per-function imports to hide a dependency cycle.
 - Avoid registries, factories, mixins, dynamic method injection, generic plugin
   systems, and configuration added only for hypothetical future needs.
-- Prefer structure and good names over function docstrings or extensive
-  comments. Use brief comments for a non-obvious mathematical step or constraint;
-  put longer explanations and formulas in the README.
+- Add or update clear docstrings when adding or changing functions and methods,
+  especially public APIs. Explain what the operation is for, its inputs, return
+  value and shape, and important restrictions or failure cases. Keep simple
+  operations brief; include a small mathematical example when meaning is unclear.
+- Explain distinctions between related operations. For example, `coordinates()`
+  finds coefficients that reconstruct a vector in an independent basis;
+  `orthogonal_coordinates()` finds factors for nonzero orthogonal directions
+  (projection coefficients when the target is outside their span); `project()`
+  returns the projected vector rather than its scalar factor.
+- Keep docstrings consistent with behavior when code changes. Retain clear
+  structure and names; use brief inline comments for non-obvious mathematical
+  steps and put longer tutorials in the README.
 - Document real algorithmic limits. For a deliberate shortcut, a brief
   `ponytail:` comment should name the limit and what would replace it.
   Do not hide a different algorithm behind an automatic fallback.
