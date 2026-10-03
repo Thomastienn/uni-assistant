@@ -99,7 +99,7 @@ def cofactor(matrix: Matrix, row: int, col: int) -> Any:
     return (-1) ** (row + col) * minor(matrix, row, col)
 
 
-def cofactor_matrix(matrix: Matrix) -> Matrix:
+def cof_matrix(matrix: Matrix) -> Matrix:
     require_square(matrix)
     return matrix._new([
         [cofactor(matrix, i, j) for j in range(matrix.ncols)]

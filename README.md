@@ -45,7 +45,7 @@ a.copy()                   # Independent row lists
 a.astype(float)            # New matrix with converted entries
 Matrix.identity(3)
 Matrix.zeros(3, 2)
-Matrix.from_columns([Matrix.vector(1, 0), Matrix.vector(0, 1)])
+Matrix.from_cols([Matrix.vector(1, 0), Matrix.vector(0, 1)])
 
 a + b
 a - b
@@ -102,15 +102,15 @@ matrix.
 
 ```python
 a.swap_rows(0, 1)
-a.swap_columns(0, 1)
+a.swap_cols(0, 1)
 a.combine_rows(target=1, source=0, source_scale=-2)  # R1 <- R1 - 2 R0
 a.without_row(0)
-a.without_column(0)
+a.without_col(0)
 
 a.det()
 a.minor(0, 1)
 a.cofactor(0, 1)
-a.cofactor_matrix()
+a.cof_matrix()
 a.adj()
 a.inv()
 a.is_inverse_of(a.inv())
@@ -119,7 +119,7 @@ a.rref()
 a.is_rref()
 a.rank()
 a.null_space()
-a.column_space()
+a.col_space()
 a.row_space()
 
 rhs = Matrix.vector(1, 0)
@@ -153,14 +153,14 @@ v = Matrix.vector(3, 1)
 
 v.dot(Matrix.vector(1, 2))       # 5
 Matrix.vector(1, 0, 0).cross(Matrix.vector(0, 1, 0))
-v.coordinates(basis)            # Column vector [2, 1]
+v.coords(basis)            # Column vector [2, 1]
 v.in_span(basis)                # True, also accepts dependent spanning sets
-Matrix.is_orthogonal(basis)     # True
-v.orthogonal_coordinates(basis)
+Matrix.is_ortho(basis)     # True
+v.ortho_coords(basis)
 v.proj(Matrix.vector(1, 1))  # Column vector [2, 2]
 ```
 
-`coordinates()` solves the system whose columns are the supplied independent
+`coords()` solves the system whose columns are the supplied independent
 basis vectors. It also works for a basis of a proper subspace, provided the
 target is in that subspace.
 
@@ -193,8 +193,9 @@ a = Matrix([[2, 1], [1, 2]])
 a.charpoly()                # Poly(x**2 - 4*x + 3, x)
 a.eigenvalues()             # [1, 3]
 a.eigenspace(1)             # [Matrix([[-1], [1]])]
-a.algebraic_multiplicity(1) # Root multiplicity in charpoly
-a.geometric_multiplicity(1) # Dimension of eigenspace
+a.alg_mult(1) # Root multiplicity in charpoly
+a.geom_mult(1) # Dimension of eigenspace
+a.can_diag()                # True: diagonalizable, not necessarily already diagonal
 
 p, d = a.diagonalize()
 assert (a @ p).is_close(p @ d)
@@ -267,6 +268,17 @@ This redesign intentionally changes names and some return values.
 
 | Old | New |
 | --- | --- |
+| `coordinates()` | `coords()` |
+| `orthogonal_coordinates()` | `ortho_coords()` |
+| `is_orthogonal()` | `is_ortho()` |
+| `column_space()` | `col_space()` |
+| `from_columns()` | `from_cols()` |
+| `swap_columns()` | `swap_cols()` |
+| `without_column()` | `without_col()` |
+| `algebraic_multiplicity()` | `alg_mult()` |
+| `geometric_multiplicity()` | `geom_mult()` |
+| `cofactor_matrix()` | `cof_matrix()` |
+| `is_diagonalizable()`, `is_diag()` | `can_diag()` |
 | `Matrix.diagonal(...)` | `Matrix.diag(...)`; constructs a diagonal matrix |
 | `a.eigenvector_matrix()`, `a.eigenvalue_matrix()` | `a.P()`, `a.D()`; individual diagonalization matrices |
 | `Matrix()`, `Matrix(t=Fraction)` | `Matrix.from_input()` |
@@ -279,18 +291,18 @@ This redesign intentionally changes names and some return values.
 | `a.show()`, `a.print_l()` | `print(a)`, `print(a.data)` |
 | `a.concat(b)` | `a.augment(b)` or `a | b` |
 | `a.swapRow(i, j)`, `a.assignRow(...)` | `a.swap_rows(i, j)`, `a.combine_rows(...)` |
-| `a.removeRow(i)`, `a.removeCol(j)` | `a.without_row(i)`, `a.without_column(j)`; return copies |
-| `a.cof(i, j)`, `a.cofMat()`, `a.adjugate()` | `a.cofactor(i, j)`, `a.cofactor_matrix()`, `a.adj()` |
+| `a.removeRow(i)`, `a.removeCol(j)` | `a.without_row(i)`, `a.without_col(j)`; return copies |
+| `a.cof(i, j)`, `a.cofMat()`, `a.adjugate()` | `a.cofactor(i, j)`, `a.cof_matrix()`, `a.adj()` |
 | `a.inverse()`, `a.inv_MIA()`, `a.inv2d()` | `a.inv()`; shared exact row reduction |
 | `Matrix.isinv(a, b)` | `a.is_inverse_of(b)` |
 | `a.solve(b)`, `a.solveSelf()` | `a.solve(b)`, `a.solve_augmented()`; return columns |
-| `a.isrref()`, `a.col_space()` | `a.is_rref()`, `a.column_space()` |
+| `a.isrref()`, `a.col_space()` | `a.is_rref()`, `a.col_space()` |
 | `v.vR(i)` | `v[i][0]` |
-| `v.cB(B)`, `v.cB_ortho(B)` | `v.coordinates(B)`, `v.orthogonal_coordinates(B)` |
-| `Matrix.is_ortho(B)`, `v.project(u)` | `Matrix.is_orthogonal(B)`, `v.proj(u)` |
+| `v.cB(B)`, `v.cB_ortho(B)` | `v.coords(B)`, `v.ortho_coords(B)` |
+| `Matrix.is_ortho(B)`, `v.project(u)` | `Matrix.is_ortho(B)`, `v.proj(u)` |
 | `a.cA()`, `a.eigen_vals()` | `a.charpoly()`, `a.eigenvalues()` |
 | `a.eigen_vec(value)` | `a.eigenspace(value)`; returns a basis, not an augmented RREF |
-| `a.is_diagnolizable()`, `a.diag()` | `a.is_diagonalizable()`, `a.diagonalize()`; returns `(P, D)` |
+| `a.is_diagnolizable()`, `a.diag()` | `a.can_diag()`, `a.diagonalize()`; returns `(P, D)` |
 | Custom `Poly.coef`, `Poly.val()`, `Poly.deriv()`, `Poly.solve()` | Native `all_coeffs()` (descending), `eval()`, `diff()`, `all_roots()` |
 
 The separate `Vector` and `Vec3d` classes retain their existing APIs.

@@ -28,15 +28,15 @@ def eigenspace(matrix: Matrix, eigenvalue: Any) -> list[Matrix]:
     return shifted.null_space()
 
 
-def algebraic_multiplicity(matrix: Matrix, eigenvalue: Any) -> int:
+def alg_mult(matrix: Matrix, eigenvalue: Any) -> int:
     return sum(is_zero(root - eigenvalue) for root in eigenvalues(matrix))
 
 
-def geometric_multiplicity(matrix: Matrix, eigenvalue: Any) -> int:
+def geom_mult(matrix: Matrix, eigenvalue: Any) -> int:
     return len(eigenspace(matrix, eigenvalue))
 
 
-def is_diagonalizable(matrix: Matrix) -> bool:
+def can_diag(matrix: Matrix) -> bool:
     roots = dict.fromkeys(eigenvalues(matrix))
     return sum(len(eigenspace(matrix, root)) for root in roots) == matrix.nrows
 
@@ -50,7 +50,7 @@ def diagonalize(matrix: Matrix) -> tuple[Matrix, Matrix]:
         values.extend([root] * len(basis))
     if len(vectors) != matrix.nrows:
         raise ValueError("Matrix does not have a full eigenvector basis.")
-    p = matrix.from_columns(vectors)
+    p = matrix.from_cols(vectors)
     d = matrix._new([
         [value if i == j else 0 for j in range(matrix.nrows)]
         for i, value in enumerate(values)

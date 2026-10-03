@@ -41,7 +41,7 @@ def require_real(vector: Matrix) -> None:
             raise ValueError("Orthogonality and projection require real-valued vectors.")
 
 
-def is_orthogonal(vectors: list[Matrix]) -> bool:
+def is_ortho(vectors: list[Matrix]) -> bool:
     if config.TOLERANCE < 0:
         raise ValueError("Tolerance must be nonnegative.")
     for vector in vectors:
@@ -50,9 +50,9 @@ def is_orthogonal(vectors: list[Matrix]) -> bool:
     return all(is_zero(dot(a, b)) for a, b in combinations(vectors, 2))
 
 
-def orthogonal_coordinates(vector: Matrix, basis: list[Matrix]) -> Matrix:
+def ortho_coords(vector: Matrix, basis: list[Matrix]) -> Matrix:
     require_real(vector)
-    if not is_orthogonal(basis):
+    if not is_ortho(basis):
         raise ValueError("Basis vectors must be orthogonal.")
     coefficients = []
     for direction in basis:
@@ -65,11 +65,11 @@ def orthogonal_coordinates(vector: Matrix, basis: list[Matrix]) -> Matrix:
 
 
 def project(vector: Matrix, onto: Matrix) -> Matrix:
-    coefficient = orthogonal_coordinates(vector, [onto])[0][0]
+    coefficient = ortho_coords(vector, [onto])[0][0]
     return onto * coefficient
 
 
-def coordinates(vector: Matrix, basis: list[Matrix]) -> Matrix:
+def coords(vector: Matrix, basis: list[Matrix]) -> Matrix:
     if not vector.is_vector():
         raise ValueError("Target must be a column vector.")
     for direction in basis:
@@ -78,7 +78,7 @@ def coordinates(vector: Matrix, basis: list[Matrix]) -> Matrix:
         if all(is_zero(row[0]) for row in vector):
             return vector._new([])
         raise ValueError("Target is outside the empty span.")
-    return vector.from_columns(basis).solve(vector)
+    return vector.from_cols(basis).solve(vector)
 
 
 def in_span(vector: Matrix, basis: list[Matrix]) -> bool:
@@ -88,5 +88,5 @@ def in_span(vector: Matrix, basis: list[Matrix]) -> bool:
         require_vectors(vector, direction)
     if not basis:
         return all(is_zero(row[0]) for row in vector)
-    columns = vector.from_columns(basis)
+    columns = vector.from_cols(basis)
     return columns.rank() == columns.augment(vector).rank()

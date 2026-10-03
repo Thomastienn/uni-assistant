@@ -103,8 +103,11 @@ their own APIs. Do not rewrite them as a side effect of matrix work.
   Keep definitions explicit so editor completion and go-to-definition work.
   Prefer familiar mathematical notation or abbreviations for public Matrix
   methods: `T()`, `inv()`, `adj()`, `proj()`, `diag()`, `rot90()`, `P()`, and
-  `D()`. Explain them in docstrings. Keep descriptive names when shortening
-  would make the operation ambiguous; do not invent cryptic abbreviations.
+  `D()`. The owner also prefers `coords`, `ortho_coords`, `is_ortho`, `col_space`,
+  `from_cols`, `swap_cols`, `without_col`, `alg_mult`, `geom_mult`, `cof_matrix`,
+  and `can_diag` over their former long names. Use the short names without
+  keeping long-name aliases. Explain their full mathematical meaning in
+  docstrings; `can_diag()` specifically means diagonalizable, not already diagonal.
 - Use `@` for matrix multiplication and `*` for scalar multiplication.
 - Matrices contain rectangular row lists. Vectors and solution vectors are
   columns; space methods return lists of column vectors. This also applies to
@@ -143,9 +146,9 @@ their own APIs. Do not rewrite them as a side effect of matrix work.
   especially public APIs. Explain what the operation is for, its inputs, return
   value and shape, and important restrictions or failure cases. Keep simple
   operations brief; include a small mathematical example when meaning is unclear.
-- Explain distinctions between related operations. For example, `coordinates()`
+- Explain distinctions between related operations. For example, `coords()`
   finds coefficients that reconstruct a vector in an independent basis;
-  `orthogonal_coordinates()` finds factors for nonzero orthogonal directions
+  `ortho_coords()` finds factors for nonzero orthogonal directions
   (projection coefficients when the target is outside their span); `proj()`
   returns the projected vector rather than its scalar factor.
 - Keep docstrings consistent with behavior when code changes. Retain clear

@@ -31,9 +31,9 @@ def demo():
     assert a.is_inverse_of(a.inv())
 
     repeated = Matrix([[2, 1], [0, 2]])
-    assert repeated.algebraic_multiplicity(2) == 2
-    assert repeated.geometric_multiplicity(2) == 1
-    assert not repeated.is_diagonalizable()
+    assert repeated.alg_mult(2) == 2
+    assert repeated.geom_mult(2) == 1
+    assert not repeated.can_diag()
     assert not repeated.is_similar(Matrix.identity(2) * 2)
 
     # This cubic has exact roots represented by CRootOf rather than simple radicals.

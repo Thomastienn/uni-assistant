@@ -27,16 +27,16 @@ class LinearTransformation:
         return [Matrix.vector(*row) for row in identity]
 
     def matrix(self) -> Matrix:
-        return Matrix.from_columns([self(vector) for vector in self.standard_basis(self.input_dim)])
+        return Matrix.from_cols([self(vector) for vector in self.standard_basis(self.input_dim)])
 
     def matrix_in_bases(self, input_basis: list[Matrix], output_basis: list[Matrix]) -> Matrix:
-        source = Matrix.from_columns(input_basis)
-        target = Matrix.from_columns(output_basis)
+        source = Matrix.from_cols(input_basis)
+        target = Matrix.from_cols(output_basis)
         if source.shape != (self.input_dim, self.input_dim) or source.rank() != self.input_dim:
             raise ValueError("Input basis must be a full independent basis.")
         if target.shape != (self.output_dim, self.output_dim) or target.rank() != self.output_dim:
             raise ValueError("Output basis must be a full independent basis.")
-        return Matrix.from_columns([self(vector).coordinates(output_basis) for vector in input_basis])
+        return Matrix.from_cols([self(vector).coords(output_basis) for vector in input_basis])
 
     def inverse(self) -> LinearTransformation:
         inverse_matrix = self.matrix().inv()

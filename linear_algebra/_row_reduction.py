@@ -86,7 +86,7 @@ def null_space(matrix: Matrix) -> list[Matrix]:
     return basis
 
 
-def column_space(matrix: Matrix) -> list[Matrix]:
+def col_space(matrix: Matrix) -> list[Matrix]:
     _, pivots = reduce_rows(matrix)
     return [matrix.vector(*(row[col] for row in matrix)) for col in pivots]
 

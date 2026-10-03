@@ -161,7 +161,7 @@ class Matrix:
         return Matrix([[value] for value in values])
 
     @staticmethod
-    def from_columns(columns: list[Matrix]) -> Matrix:
+    def from_cols(columns: list[Matrix]) -> Matrix:
         """Build a matrix from equal-sized column vectors in the supplied order.
 
         An empty list produces Matrix([]). Invalid vector shapes raise ValueError.
@@ -257,7 +257,7 @@ class Matrix:
         result.data[first], result.data[second] = result.data[second], result.data[first]
         return result
 
-    def swap_columns(self, first: int, second: int) -> Matrix:
+    def swap_cols(self, first: int, second: int) -> Matrix:
         """Return a copy with the two indexed columns exchanged."""
         result = self.copy()
         for row in result:
@@ -282,7 +282,7 @@ class Matrix:
         result.data.pop(index)
         return result
 
-    def without_column(self, index: int) -> Matrix:
+    def without_col(self, index: int) -> Matrix:
         """Return a copy with the indexed column removed.
 
         Removing the only column of a nonempty matrix raises ValueError because
@@ -311,13 +311,13 @@ class Matrix:
         """Return (-1)**(row + col) times the minor at these zero-based indices."""
         return algebra.cofactor(self, row, col)
 
-    def cofactor_matrix(self) -> Matrix:
+    def cof_matrix(self) -> Matrix:
         """Return the matrix of cofactors for a square matrix."""
-        return algebra.cofactor_matrix(self)
+        return algebra.cof_matrix(self)
 
     def adj(self) -> Matrix:
         """Return the transposed cofactor matrix of a square matrix."""
-        return self.cofactor_matrix().T()
+        return self.cof_matrix().T()
 
     def inv(self) -> Matrix:
         """Return the inverse using row reduction.
@@ -381,9 +381,9 @@ class Matrix:
         """
         return reduction.null_space(self)
 
-    def column_space(self) -> list[Matrix]:
+    def col_space(self) -> list[Matrix]:
         """Return independent original columns forming a basis of the column space."""
-        return reduction.column_space(self)
+        return reduction.col_space(self)
 
     def row_space(self) -> list[Matrix]:
         """Return a row-space basis from nonzero RREF rows, each stored as a column vector."""
@@ -409,24 +409,24 @@ class Matrix:
         return vectors.cross(self, other)
 
     @staticmethod
-    def is_orthogonal(basis: list[Matrix]) -> bool:
+    def is_ortho(basis: list[Matrix]) -> bool:
         """Check whether every distinct pair of supplied vectors has dot product zero.
 
         Inputs must be equal-sized real column vectors. Zero vectors are allowed
         by this check; an empty list returns True. This does not check unit length
         or guarantee that the vectors form a basis.
         """
-        return vectors.is_orthogonal(basis)
+        return vectors.is_ortho(basis)
 
-    def coordinates(self, basis: list[Matrix]) -> Matrix:
+    def coords(self, basis: list[Matrix]) -> Matrix:
         """Find the coefficients that express this vector in the supplied basis.
 
         basis is an ordered list of independent column vectors of the same size
         as self. Return a coefficient column c satisfying
-        Matrix.from_columns(basis) @ c == self.
+        Matrix.from_cols(basis) @ c == self.
 
         For basis = [Matrix.vector(1, 1), Matrix.vector(1, -1)],
-        Matrix.vector(3, 1).coordinates(basis) returns the column [2, 1],
+        Matrix.vector(3, 1).coords(basis) returns the column [2, 1],
         because (3, 1) = 2*(1, 1) + 1*(1, -1).
 
         The basis need not span the whole ambient space, but self must lie in
@@ -434,9 +434,9 @@ class Matrix:
         or a target outside the span. An empty basis accepts only the zero
         vector and returns Matrix([]).
         """
-        return vectors.coordinates(self, basis)
+        return vectors.coords(self, basis)
 
-    def orthogonal_coordinates(self, basis: list[Matrix]) -> Matrix:
+    def ortho_coords(self, basis: list[Matrix]) -> Matrix:
         """Return the factors multiplying mutually orthogonal basis vectors.
 
         For each direction f, compute c = self.dot(f) / f.dot(f), returning the
@@ -450,7 +450,7 @@ class Matrix:
         basis = [Matrix.vector(1, 1), Matrix.vector(1, -1)], the factors are
         [2, 1]. An empty basis returns Matrix([]).
         """
-        return vectors.orthogonal_coordinates(self, basis)
+        return vectors.ortho_coords(self, basis)
 
     def proj(self, onto: Matrix) -> Matrix:
         """Return the projection vector along the nonzero direction onto.
@@ -459,14 +459,14 @@ class Matrix:
         real column vectors of the same size; invalid inputs raise ValueError.
         For example, Matrix.vector(3, 1).proj(Matrix.vector(1, 1)) returns
         Matrix.vector(2, 2). To get just the scalar factor, use
-        self.orthogonal_coordinates([onto])[0][0].
+        self.ortho_coords([onto])[0][0].
         """
         return vectors.project(self, onto)
 
     def in_span(self, basis: list[Matrix]) -> bool:
         """Check whether this vector is a linear combination of the supplied vectors.
 
-        Accept dependent spanning sets, unlike coordinates(). Inputs must be
+        Accept dependent spanning sets, unlike coords(). Inputs must be
         matching column vectors. An empty list spans only the zero vector.
         """
         return vectors.in_span(self, basis)
@@ -494,17 +494,21 @@ class Matrix:
         """
         return spectral.eigenspace(self, eigenvalue)
 
-    def algebraic_multiplicity(self, eigenvalue: Any) -> int:
+    def alg_mult(self, eigenvalue: Any) -> int:
         """Count occurrences of eigenvalue as a root of the characteristic polynomial."""
-        return spectral.algebraic_multiplicity(self, eigenvalue)
+        return spectral.alg_mult(self, eigenvalue)
 
-    def geometric_multiplicity(self, eigenvalue: Any) -> int:
+    def geom_mult(self, eigenvalue: Any) -> int:
         """Return the dimension of the eigenspace, or zero for a non-eigenvalue."""
-        return spectral.geometric_multiplicity(self, eigenvalue)
+        return spectral.geom_mult(self, eigenvalue)
 
-    def is_diagonalizable(self) -> bool:
-        """Check whether a square matrix has a full eigenvector basis over the complex numbers."""
-        return spectral.is_diagonalizable(self)
+    def can_diag(self) -> bool:
+        """Check whether a square matrix is diagonalizable over the complex numbers.
+
+        Return whether it has a full eigenvector basis, not whether its
+        off-diagonal entries are already zero.
+        """
+        return spectral.can_diag(self)
 
     def diagonalize(self) -> tuple[Matrix, Matrix]:
         """Return (P, D) with eigenvectors in P and matching eigenvalues on diagonal D.
