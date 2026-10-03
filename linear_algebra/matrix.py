@@ -139,6 +139,20 @@ class Matrix:
         return result
 
     @staticmethod
+    def diag(*values: Any) -> Matrix:
+        """Create a square matrix with values on its diagonal and zeros elsewhere.
+
+        Matrix.diag(2, 3) gives [[2, 0], [0, 3]]. For a list of entries,
+        use Matrix.diag(*entries). Strings are parsed by the constructor,
+        and entries must satisfy its scalar validation rules.
+        No values produces the 0 by 0 empty matrix.
+        """
+        return Matrix([
+            [value if i == j else 0 for j in range(len(values))]
+            for i, value in enumerate(values)
+        ])
+
+    @staticmethod
     def vector(*values: Any) -> Matrix:
         """Create a column vector, e.g. Matrix.vector(3, 1) gives [[3], [1]].
 
@@ -207,7 +221,7 @@ class Matrix:
             raise TypeError("Matrix exponent must be an integer.")
         algebra.require_square(self)
         if exponent < 0:
-            return self.inverse() ** (-exponent)
+            return self.inv() ** (-exponent)
         result = self.identity(self.nrows)
         base = self.copy()
         while exponent:
@@ -217,13 +231,13 @@ class Matrix:
             exponent //= 2
         return result
 
-    def transpose(self) -> Matrix:
+    def T(self) -> Matrix:
         """Return a new matrix with rows and columns exchanged; do not conjugate entries."""
         return self._new([list(row) for row in zip(*self)])
 
-    def rotate90(self) -> Matrix:
+    def rot90(self) -> Matrix:
         """Return a new matrix rotated 90 degrees clockwise."""
-        return self._new([row[::-1] for row in self.transpose()])
+        return self._new([row[::-1] for row in self.T()])
 
     def augment(self, other: Matrix) -> Matrix:
         """Join other to the right of this matrix; row counts must match."""
@@ -301,11 +315,11 @@ class Matrix:
         """Return the matrix of cofactors for a square matrix."""
         return algebra.cofactor_matrix(self)
 
-    def adjugate(self) -> Matrix:
+    def adj(self) -> Matrix:
         """Return the transposed cofactor matrix of a square matrix."""
-        return self.cofactor_matrix().transpose()
+        return self.cofactor_matrix().T()
 
-    def inverse(self) -> Matrix:
+    def inv(self) -> Matrix:
         """Return the inverse using row reduction.
 
         Raise ValueError if the matrix is not square or is singular.
@@ -438,12 +452,12 @@ class Matrix:
         """
         return vectors.orthogonal_coordinates(self, basis)
 
-    def project(self, onto: Matrix) -> Matrix:
+    def proj(self, onto: Matrix) -> Matrix:
         """Return the projection vector along the nonzero direction onto.
 
         Compute onto * (self.dot(onto) / onto.dot(onto)). Both inputs must be
         real column vectors of the same size; invalid inputs raise ValueError.
-        For example, Matrix.vector(3, 1).project(Matrix.vector(1, 1)) returns
+        For example, Matrix.vector(3, 1).proj(Matrix.vector(1, 1)) returns
         Matrix.vector(2, 2). To get just the scalar factor, use
         self.orthogonal_coordinates([onto])[0][0].
         """
@@ -495,16 +509,34 @@ class Matrix:
     def diagonalize(self) -> tuple[Matrix, Matrix]:
         """Return (P, D) with eigenvectors in P and matching eigenvalues on diagonal D.
 
-        They satisfy self @ P == P @ D, so self = P @ D @ P.inverse().
+        They satisfy self @ P == P @ D, so self = P @ D @ P.inv().
         Works over the complex numbers. Raise ValueError for a nonsquare matrix
         or when there are too few independent eigenvectors.
         """
         return spectral.diagonalize(self)
 
+    def P(self) -> Matrix:
+        """Return P from diagonalize(), with independent eigenvectors as columns.
+
+        The columns match the diagonal order in D(). Requires
+        a square, diagonalizable matrix; otherwise raise ValueError.
+        Use diagonalize() when both P and D are needed to avoid computing twice.
+        """
+        return self.diagonalize()[0]
+
+    def D(self) -> Matrix:
+        """Return D from diagonalize(), with matching eigenvalues on the diagonal.
+
+        Requires a square, diagonalizable matrix; otherwise raise ValueError.
+        This computes the full diagonalization. To list eigenvalues without
+        requiring an eigenvector basis, use eigenvalues() instead.
+        """
+        return self.diagonalize()[1]
+
     def is_similar(self, other: Matrix) -> bool:
         """Check whether square matrices represent the same map in different bases.
 
-        Return whether other = P.inverse() @ self @ P for some invertible P
+        Return whether other = P.inv() @ self @ P for some invertible P
         over the complex numbers. Compare characteristic polynomials and Jordan
         block sizes through ranks; equal eigenvalues alone are insufficient.
         Nonsquare inputs raise ValueError; different sizes return False.

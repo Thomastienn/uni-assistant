@@ -101,6 +101,10 @@ their own APIs. Do not rewrite them as a side effect of matrix work.
 
 - Use descriptive `snake_case` names and useful argument/return annotations.
   Keep definitions explicit so editor completion and go-to-definition work.
+  Prefer familiar mathematical notation or abbreviations for public Matrix
+  methods: `T()`, `inv()`, `adj()`, `proj()`, `diag()`, `rot90()`, `P()`, and
+  `D()`. Explain them in docstrings. Keep descriptive names when shortening
+  would make the operation ambiguous; do not invent cryptic abbreviations.
 - Use `@` for matrix multiplication and `*` for scalar multiplication.
 - Matrices contain rectangular row lists. Vectors and solution vectors are
   columns; space methods return lists of column vectors. This also applies to
@@ -142,7 +146,7 @@ their own APIs. Do not rewrite them as a side effect of matrix work.
 - Explain distinctions between related operations. For example, `coordinates()`
   finds coefficients that reconstruct a vector in an independent basis;
   `orthogonal_coordinates()` finds factors for nonzero orthogonal directions
-  (projection coefficients when the target is outside their span); `project()`
+  (projection coefficients when the target is outside their span); `proj()`
   returns the projected vector rather than its scalar factor.
 - Keep docstrings consistent with behavior when code changes. Retain clear
   structure and names; use brief inline comments for non-obvious mathematical
@@ -155,7 +159,7 @@ their own APIs. Do not rewrite them as a side effect of matrix work.
 
 - For code changes, run the existing example and checks relevant to the changed
   behavior. Useful identities include `A @ solution == b`, `A @ v == lambda*v`,
-  `A @ P == P @ D`, and `A @ inverse(A) == I`; use `is_close()` as appropriate.
+  `A @ P == P @ D`, and `A @ A.inv() == I`; use `is_close()` as appropriate.
 - Cover applicable edge cases: singular/rectangular systems, dependent vectors,
   repeated eigenvalues, exact fractions, floats, irrational or complex roots,
   and input immutability. Algebraic-root changes need a `CRootOf` case too.

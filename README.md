@@ -52,9 +52,9 @@ a - b
 a @ b                      # Matrix multiplication
 3 * a                      # Scalar multiplication
 a / 2                      # Exact Fraction entries for integer inputs
-a ** 3                     # Integer powers; negative powers use inverse()
-a.transpose()
-a.rotate90()
+a ** 3                     # Integer powers; negative powers use inv()
+a.T()
+a.rot90()
 a | v                      # Same as a.augment(v)
 a == b                     # Exact entry equality
 a.is_close(b)              # Numerical tolerance or exact scalar simplification
@@ -74,6 +74,30 @@ one space-separated row per line. Its default parser is `Fraction`, so
 `1/3` stays exact. Use `Matrix.from_input(float)` or
 `Matrix.from_input(complex)` for other numeric input.
 
+#### Diagonal matrices
+
+Use `Matrix.diag()` when you know the entries on the main diagonal.
+All other entries are zero; the number of supplied values determines the
+square matrix's size.
+
+```python
+from linear_algebra.matrix import Matrix
+
+d = Matrix.diag(2, 3, 4)
+assert d == Matrix([[2, 0, 0], [0, 3, 0], [0, 0, 4]])
+assert d @ Matrix.vector(1, 2, 3) == Matrix.vector(2, 6, 12)
+
+entries = [2, 3, 4]
+assert Matrix.diag(*entries) == d
+Matrix.diag("x", "1/3")  # Symbolic diagonal; strings use SymPy parsing
+Matrix.diag()            # Empty 0 by 0 matrix
+```
+
+Entries follow the same validation as `Matrix(...)`; only pass trusted strings
+to SymPy's parser. `diag()` constructs a matrix from supplied entries;
+`a.diagonalize()` instead computes eigenvectors and eigenvalues of an existing
+matrix.
+
 ### Row operations and systems
 
 ```python
@@ -87,9 +111,9 @@ a.det()
 a.minor(0, 1)
 a.cofactor(0, 1)
 a.cofactor_matrix()
-a.adjugate()
-a.inverse()
-a.is_inverse_of(a.inverse())
+a.adj()
+a.inv()
+a.is_inverse_of(a.inv())
 
 a.rref()
 a.is_rref()
@@ -133,7 +157,7 @@ v.coordinates(basis)            # Column vector [2, 1]
 v.in_span(basis)                # True, also accepts dependent spanning sets
 Matrix.is_orthogonal(basis)     # True
 v.orthogonal_coordinates(basis)
-v.project(Matrix.vector(1, 1))  # Column vector [2, 2]
+v.proj(Matrix.vector(1, 1))  # Column vector [2, 2]
 ```
 
 `coordinates()` solves the system whose columns are the supplied independent
@@ -174,8 +198,24 @@ a.geometric_multiplicity(1) # Dimension of eigenspace
 
 p, d = a.diagonalize()
 assert (a @ p).is_close(p @ d)
-assert (p @ d @ p.inverse()).is_close(a)
+assert (p @ d @ p.inv()).is_close(a)
 ```
+
+To get only one matrix, use these convenience methods:
+
+```python
+from linear_algebra.matrix import Matrix
+
+a = Matrix([[2, 1], [1, 2]])
+p = a.P()  # P: independent eigenvectors as columns
+d = a.D()   # D: matching eigenvalues on the diagonal
+assert (a @ p).is_close(p @ d)
+```
+
+Both methods reuse `diagonalize()` and raise `ValueError` if the matrix is
+nonsquare or lacks a full eigenvector basis. Each computes the full pair, so
+use `p, d = a.diagonalize()` when you need both. To get eigenvalues even when
+diagonalization is impossible, use `a.eigenvalues()`.
 
 Follow these steps in `_matrix_spectral.py`:
 
@@ -227,10 +267,12 @@ This redesign intentionally changes names and some return values.
 
 | Old | New |
 | --- | --- |
+| `Matrix.diagonal(...)` | `Matrix.diag(...)`; constructs a diagonal matrix |
+| `a.eigenvector_matrix()`, `a.eigenvalue_matrix()` | `a.P()`, `a.D()`; individual diagonalization matrices |
 | `Matrix()`, `Matrix(t=Fraction)` | `Matrix.from_input()` |
 | `a.a` | `a.data` |
 | `a * b` for two matrices | `a @ b` |
-| `a.T()`, `a.rot90()` | `a.transpose()`, `a.rotate90()` |
+| `a.transpose()`, `a.rotate90()` | `a.T()`, `a.rot90()` |
 | `Matrix.imat(n)`, `Matrix.im(n)` | `Matrix.identity(n)`, `Matrix.identity(n).data` |
 | `Matrix.mvec(...)`, `Matrix.zero_vec(n)` | `Matrix.vector(...)`, `Matrix.zeros(n, 1)` |
 | `a._copyMat()`, `a._copyArr()` | `a.copy()`, `a.copy().data` |
@@ -238,14 +280,14 @@ This redesign intentionally changes names and some return values.
 | `a.concat(b)` | `a.augment(b)` or `a | b` |
 | `a.swapRow(i, j)`, `a.assignRow(...)` | `a.swap_rows(i, j)`, `a.combine_rows(...)` |
 | `a.removeRow(i)`, `a.removeCol(j)` | `a.without_row(i)`, `a.without_column(j)`; return copies |
-| `a.cof(i, j)`, `a.cofMat()`, `a.adj()` | `a.cofactor(i, j)`, `a.cofactor_matrix()`, `a.adjugate()` |
-| `a.inv()`, `a.inv_MIA()`, `a.inv2d()` | `a.inverse()`; shared exact row reduction |
+| `a.cof(i, j)`, `a.cofMat()`, `a.adjugate()` | `a.cofactor(i, j)`, `a.cofactor_matrix()`, `a.adj()` |
+| `a.inverse()`, `a.inv_MIA()`, `a.inv2d()` | `a.inv()`; shared exact row reduction |
 | `Matrix.isinv(a, b)` | `a.is_inverse_of(b)` |
 | `a.solve(b)`, `a.solveSelf()` | `a.solve(b)`, `a.solve_augmented()`; return columns |
 | `a.isrref()`, `a.col_space()` | `a.is_rref()`, `a.column_space()` |
 | `v.vR(i)` | `v[i][0]` |
 | `v.cB(B)`, `v.cB_ortho(B)` | `v.coordinates(B)`, `v.orthogonal_coordinates(B)` |
-| `Matrix.is_ortho(B)`, `v.proj(u)` | `Matrix.is_orthogonal(B)`, `v.project(u)` |
+| `Matrix.is_ortho(B)`, `v.project(u)` | `Matrix.is_orthogonal(B)`, `v.proj(u)` |
 | `a.cA()`, `a.eigen_vals()` | `a.charpoly()`, `a.eigenvalues()` |
 | `a.eigen_vec(value)` | `a.eigenspace(value)`; returns a basis, not an augmented RREF |
 | `a.is_diagnolizable()`, `a.diag()` | `a.is_diagonalizable()`, `a.diagonalize()`; returns `(P, D)` |

@@ -5,6 +5,9 @@ from linear_algebra.polynomial import Poly, x
 
 
 def demo():
+    diagonal = Matrix.diag(2, 3, 4)
+    assert diagonal @ Matrix.vector(1, 2, 3) == Matrix.vector(2, 6, 12)
+
     polynomial = Poly(x**3 - 4*x**2 + 5*x - 2, x)
     assert polynomial.all_roots() == [1, 1, 2]
 
@@ -21,11 +24,11 @@ def demo():
     # Eigenvectors become columns of P, in the same order as entries of D.
     p, d = a.diagonalize()
     assert (a @ p).is_close(p @ d)
-    assert (p @ d @ p.inverse()).is_close(a)
+    assert (p @ d @ p.inv()).is_close(a)
 
     rhs = Matrix.vector(1, 0)
     assert a.solve(rhs) == Matrix.vector(Fraction(2, 3), Fraction(-1, 3))
-    assert a.is_inverse_of(a.inverse())
+    assert a.is_inverse_of(a.inv())
 
     repeated = Matrix([[2, 1], [0, 2]])
     assert repeated.algebraic_multiplicity(2) == 2

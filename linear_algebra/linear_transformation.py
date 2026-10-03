@@ -39,5 +39,5 @@ class LinearTransformation:
         return Matrix.from_columns([self(vector).coordinates(output_basis) for vector in input_basis])
 
     def inverse(self) -> LinearTransformation:
-        inverse_matrix = self.matrix().inverse()
+        inverse_matrix = self.matrix().inv()
         return LinearTransformation(self.output_dim, self.input_dim, lambda vector: inverse_matrix @ vector)
