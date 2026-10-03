@@ -73,8 +73,29 @@ their own APIs. Do not rewrite them as a side effect of matrix work.
    explicitly defined method in `Matrix` when it belongs in the public API.
 4. Follow the conventions below. Add a new module only for a distinct topic
    that no existing module reasonably owns, not for each new method.
-5. Add a short README example and verify a mathematical identity through the
-   public API. Keep the example runnable without editor-specific setup.
+5. Update the relevant README section following the documentation guidance
+   below, and verify a mathematical identity through the public API.
+
+## README and usage documentation
+
+- Update README.md in the same task whenever a change affects how users create
+  inputs, call an operation, interpret results, or handle errors and limitations.
+  Keep examples consistent with the current API and docstrings.
+- Write for someone new to the project: they should be able to install it and
+  use its main features by reading the README without inspecting implementation
+  files or knowing earlier conversations.
+- Organize usage by topic with descriptive headings: setup and a quick start,
+  matrix construction and arithmetic, symbolic inputs, systems and spaces,
+  vector coordinates and projection, polynomials and equations, eigenvalues
+  and diagonalization, linear transformations, and logic. Add examples to the
+  relevant category rather than appending unrelated snippets at the end.
+- Explain when to use each operation, its expected inputs and output shape,
+  and important restrictions. Include small runnable examples with imports,
+  defined inputs, and expected results; introduce basic usage before advanced
+  details. Distinguish project methods from direct SymPy usage.
+- Keep setup and usage easy to find. Put implementation reading guides and
+  migration notes after the introductory usage material, and update navigation
+  links when sections move. Verify changed examples and links before handoff.
 
 ## API and numerical conventions
 

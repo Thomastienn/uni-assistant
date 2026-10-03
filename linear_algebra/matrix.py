@@ -6,7 +6,7 @@ from math import isfinite
 from numbers import Number
 from typing import Any
 
-from sympy import Expr
+from sympy import Expr, sympify
 
 from linear_algebra import _matrix_algebra as algebra
 from linear_algebra import _matrix_spectral as spectral
@@ -20,10 +20,20 @@ class Matrix:
     def __init__(self, rows: Rows | Matrix) -> None:
         """Create a matrix from rectangular rows, copying each row.
 
-        Reject nonnumeric entries, nonfinite numbers, and unequal row lengths.
+        Convert string entries such as "x", "x + 1", or "1/3" to SymPy
+        expressions. For example, Matrix([["x", 2], [1, "x + 1"]]) creates
+        a symbolic matrix. Use explicit multiplication ("2*x"). Only pass
+        trusted strings: SymPy's parser evaluates Python expressions.
+
+        Reject entries that are not numbers or scalar expressions, nonfinite
+        numbers, and unequal row lengths. Malformed expressions may raise
+        SympifyError during parsing.
         Use Matrix([]) for a 0 by 0 matrix; other empty shapes are unsupported.
         """
-        self.data = [list(row) for row in rows]
+        self.data = [
+            [sympify(value) if isinstance(value, str) else value for value in row]
+            for row in rows
+        ]
         if self.data and not self.data[0]:
             raise ValueError("Use Matrix([]) for the empty matrix; nonempty rows need columns.")
         if any(len(row) != self.ncols for row in self):
