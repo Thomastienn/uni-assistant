@@ -109,6 +109,9 @@ their own APIs. Do not rewrite them as a side effect of matrix work.
   keeping long-name aliases. Explain their full mathematical meaning in
   docstrings; `can_diag()` specifically means diagonalizable, not already diagonal.
 - Use `@` for matrix multiplication and `*` for scalar multiplication.
+- Call static methods through their defining class name, never through an
+  instance. Use `Matrix.from_cols(basis)`, not `vector.from_cols(basis)`;
+  this also applies inside instance methods and algorithm helpers.
 - Matrices contain rectangular row lists. Vectors and solution vectors are
   columns; space methods return lists of column vectors. This also applies to
   the vector representation returned by `row_space()`.
@@ -138,8 +141,10 @@ their own APIs. Do not rewrite them as a side effect of matrix work.
   rather than adding guards to individual callers.
 - Prefer focused functions, ordinary loops, and visible intermediate values.
   A reader should be able to connect each step to the mathematical method.
-- Keep runtime imports acyclic. Helpers use `TYPE_CHECKING` for `Matrix` type
-  references; do not add per-function imports to hide a dependency cycle.
+- Define `Matrix` before importing the algorithm helpers that need its static
+  methods, so those helpers can import `Matrix` at module scope safely.
+  Helpers that only need `Matrix` for annotations use `TYPE_CHECKING`.
+  Do not add per-function imports to hide a dependency cycle.
 - Avoid registries, factories, mixins, dynamic method injection, generic plugin
   systems, and configuration added only for hypothetical future needs.
 - Add or update clear docstrings when adding or changing functions and methods,

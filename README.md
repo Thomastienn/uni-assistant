@@ -64,6 +64,9 @@ Construction copies the supplied rows. Methods return new matrices; they do not
 change their inputs. Direct writes such as `a[0][1] = 7` still change `a`;
 keep rows rectangular and entries numeric when editing `data`.
 
+Call static methods through their class name, for example
+`Matrix.from_cols(basis)`.
+
 Vectors and solution vectors are columns. Space methods return lists of column
 vectors, including `row_space()`, which represents each basis row as a column.
 The empty basis is `[]`; `Matrix([])` represents a 0 by 0 matrix. Other

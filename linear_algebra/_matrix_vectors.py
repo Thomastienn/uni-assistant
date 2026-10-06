@@ -2,15 +2,13 @@ from __future__ import annotations
 
 from itertools import combinations
 from numbers import Real
-from typing import TYPE_CHECKING, Any
+from typing import Any
 
 from sympy import Expr
 
 from linear_algebra import config
 from linear_algebra._matrix_algebra import divide, is_zero
-
-if TYPE_CHECKING:
-    from linear_algebra.matrix import Matrix
+from linear_algebra.matrix import Matrix
 
 
 def require_vectors(a: Matrix, b: Matrix) -> None:
@@ -29,7 +27,7 @@ def cross(a: Matrix, b: Matrix) -> Matrix:
         raise ValueError("Cross product requires 3D vectors.")
     x, y, z = (row[0] for row in a)
     u, v, w = (row[0] for row in b)
-    return a.vector(y * w - z * v, z * u - x * w, x * v - y * u)
+    return Matrix.vector(y * w - z * v, z * u - x * w, x * v - y * u)
 
 
 def require_real(vector: Matrix) -> None:
@@ -61,7 +59,7 @@ def ortho_coords(vector: Matrix, basis: list[Matrix]) -> Matrix:
         if is_zero(denominator):
             raise ValueError("Basis vectors must be nonzero.")
         coefficients.append(divide(dot(vector, direction), denominator))
-    return vector.vector(*coefficients)
+    return Matrix.vector(*coefficients)
 
 
 def project(vector: Matrix, onto: Matrix) -> Matrix:
@@ -78,7 +76,7 @@ def coords(vector: Matrix, basis: list[Matrix]) -> Matrix:
         if all(is_zero(row[0]) for row in vector):
             return vector._new([])
         raise ValueError("Target is outside the empty span.")
-    return vector.from_cols(basis).solve(vector)
+    return Matrix.from_cols(basis).solve(vector)
 
 
 def in_span(vector: Matrix, basis: list[Matrix]) -> bool:
@@ -88,5 +86,5 @@ def in_span(vector: Matrix, basis: list[Matrix]) -> bool:
         require_vectors(vector, direction)
     if not basis:
         return all(is_zero(row[0]) for row in vector)
-    columns = vector.from_cols(basis)
+    columns = Matrix.from_cols(basis)
     return columns.rank() == columns.augment(vector).rank()

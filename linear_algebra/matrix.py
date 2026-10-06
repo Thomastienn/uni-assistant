@@ -9,9 +9,6 @@ from typing import Any
 from sympy import Expr, sympify
 
 from linear_algebra import _matrix_algebra as algebra
-from linear_algebra import _matrix_spectral as spectral
-from linear_algebra import _matrix_vectors as vectors
-from linear_algebra import _row_reduction as reduction
 from linear_algebra._matrix_types import Row, Rows
 from linear_algebra.polynomial import Poly
 
@@ -222,7 +219,7 @@ class Matrix:
         algebra.require_square(self)
         if exponent < 0:
             return self.inv() ** (-exponent)
-        result = self.identity(self.nrows)
+        result = Matrix.identity(self.nrows)
         base = self.copy()
         while exponent:
             if exponent % 2:
@@ -330,7 +327,7 @@ class Matrix:
         """Check whether both matrix products equal the identity using is_close."""
         if self.shape != other.shape or self.nrows != self.ncols:
             return False
-        identity = self.identity(self.nrows)
+        identity = Matrix.identity(self.nrows)
         return (self @ other).is_close(identity) and (other @ self).is_close(identity)
 
     def rref(self) -> Matrix:
@@ -370,7 +367,7 @@ class Matrix:
         if self.ncols == 0:
             raise ValueError("Augmented system needs a right-hand-side column.")
         coefficients = self._new([row[:-1] for row in self])
-        rhs = self.vector(*(row[-1] for row in self))
+        rhs = Matrix.vector(*(row[-1] for row in self))
         return coefficients.solve(rhs)
 
     def null_space(self) -> list[Matrix]:
@@ -546,3 +543,9 @@ class Matrix:
         Nonsquare inputs raise ValueError; different sizes return False.
         """
         return spectral.is_similar(self, other)
+
+
+# These helpers import Matrix for static methods, so define the class first.
+from linear_algebra import _matrix_spectral as spectral
+from linear_algebra import _matrix_vectors as vectors
+from linear_algebra import _row_reduction as reduction

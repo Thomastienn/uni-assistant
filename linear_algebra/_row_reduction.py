@@ -1,15 +1,11 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
 from sympy import Expr, Float, sympify
 from sympy.polys.constructor import construct_domain
 
 from linear_algebra import config
 from linear_algebra._matrix_algebra import divide, is_zero, require_square, simplify_scalar
-
-if TYPE_CHECKING:
-    from linear_algebra.matrix import Matrix
+from linear_algebra.matrix import Matrix
 
 
 def reduce_rows(matrix: Matrix) -> tuple[Matrix, list[int]]:
@@ -82,18 +78,18 @@ def null_space(matrix: Matrix) -> list[Matrix]:
         vector[free_col] = 1
         for row, pivot_col in enumerate(pivots):
             vector[pivot_col] = -reduced[row][free_col]
-        basis.append(matrix.vector(*vector))
+        basis.append(Matrix.vector(*vector))
     return basis
 
 
 def col_space(matrix: Matrix) -> list[Matrix]:
     _, pivots = reduce_rows(matrix)
-    return [matrix.vector(*(row[col] for row in matrix)) for col in pivots]
+    return [Matrix.vector(*(row[col] for row in matrix)) for col in pivots]
 
 
 def row_space(matrix: Matrix) -> list[Matrix]:
     reduced, pivots = reduce_rows(matrix)
-    return [matrix.vector(*reduced[i]) for i in range(len(pivots))]
+    return [Matrix.vector(*reduced[i]) for i in range(len(pivots))]
 
 
 def solve(matrix: Matrix, rhs: Matrix) -> Matrix:
@@ -111,7 +107,7 @@ def inverse(matrix: Matrix) -> Matrix:
     require_square(matrix)
     if matrix.nrows == 0:
         return matrix.copy()
-    return solve(matrix, matrix.identity(matrix.nrows))
+    return solve(matrix, Matrix.identity(matrix.nrows))
 
 
 def is_rref(matrix: Matrix) -> bool:

@@ -1,19 +1,17 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any
+from typing import Any
 
 from linear_algebra._matrix_algebra import is_zero, require_square
+from linear_algebra.matrix import Matrix
 from linear_algebra.polynomial import Poly, x
-
-if TYPE_CHECKING:
-    from linear_algebra.matrix import Matrix
 
 
 def charpoly(matrix: Matrix) -> Poly:
     require_square(matrix)
     if any(getattr(value, "free_symbols", set()) for row in matrix for value in row):
         raise ValueError("Spectral calculations require numeric entries; substitute symbols first.")
-    shifted = matrix.identity(matrix.nrows) * x - matrix
+    shifted = Matrix.identity(matrix.nrows) * x - matrix
     return Poly(shifted.det(), x, extension=True)
 
 
@@ -24,7 +22,7 @@ def eigenvalues(matrix: Matrix) -> list[Any]:
 
 def eigenspace(matrix: Matrix, eigenvalue: Any) -> list[Matrix]:
     require_square(matrix)
-    shifted = matrix - matrix.identity(matrix.nrows) * eigenvalue
+    shifted = matrix - Matrix.identity(matrix.nrows) * eigenvalue
     return shifted.null_space()
 
 
@@ -50,7 +48,7 @@ def diagonalize(matrix: Matrix) -> tuple[Matrix, Matrix]:
         values.extend([root] * len(basis))
     if len(vectors) != matrix.nrows:
         raise ValueError("Matrix does not have a full eigenvector basis.")
-    p = matrix.from_cols(vectors)
+    p = Matrix.from_cols(vectors)
     d = matrix._new([
         [value if i == j else 0 for j in range(matrix.nrows)]
         for i, value in enumerate(values)
@@ -68,8 +66,8 @@ def is_similar(matrix: Matrix, other: Matrix) -> bool:
     # Nullities of successive powers determine the Jordan block sizes.
     roots = eigenvalues(matrix)
     for root in dict.fromkeys(roots):
-        left = matrix - matrix.identity(matrix.nrows) * root
-        right = other - other.identity(other.nrows) * root
+        left = matrix - Matrix.identity(matrix.nrows) * root
+        right = other - Matrix.identity(other.nrows) * root
         left_power, right_power = left, right
         for _ in range(roots.count(root)):
             if left_power.rank() != right_power.rank():

@@ -27,7 +27,7 @@ class LinearTransformation:
         return [Matrix.vector(*row) for row in identity]
 
     def matrix(self) -> Matrix:
-        return Matrix.from_cols([self(vector) for vector in self.standard_basis(self.input_dim)])
+        return Matrix.from_cols([self(vector) for vector in LinearTransformation.standard_basis(self.input_dim)])
 
     def matrix_in_bases(self, input_basis: list[Matrix], output_basis: list[Matrix]) -> Matrix:
         source = Matrix.from_cols(input_basis)
