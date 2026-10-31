@@ -9,6 +9,7 @@ from sympy import Expr
 from linear_algebra import config
 from linear_algebra._matrix_algebra import divide, is_zero
 from linear_algebra.matrix import Matrix
+from linear_algebra.polynomial import Poly
 
 
 def require_vectors(a: Matrix, b: Matrix) -> None:
@@ -89,12 +90,43 @@ def as_vectors(target: Matrix, basis: list[Matrix]) -> tuple[Matrix, list[Matrix
     return target.vectorize(), [direction.vectorize() for direction in basis]
 
 
-def coords(vector: Matrix, basis: list[Matrix]) -> Matrix:
+def coords(target: Matrix | Poly, basis: list[Matrix] | list[Poly]) -> Matrix:
+    """Return the coordinate column c satisfying target = sum(c_i * basis_i).
+
+    Accept same-shaped Matrix objects, or univariate SymPy Poly objects with
+    the same generator and numeric coefficients in characteristic zero.
+    Polynomial coefficients are matched in increasing powers, padding missing
+    terms with zeros, before solving with our handwritten matrix solver.
+
+    The ordered basis must be independent and its span must contain target.
+    Raise TypeError for unsupported or mixed types; raise ValueError for
+    incompatible shapes or generators, unsupported coefficients or fields,
+    dependent bases, or a target outside the span. An empty basis accepts only
+    a zero target and returns Matrix([]).
+    """
+    if isinstance(target, Poly):
+        polynomials = [target, *basis]
+        if any(not isinstance(poly, Poly) for poly in polynomials):
+            raise TypeError("A polynomial target requires a basis of Poly objects.")
+        if any(len(poly.gens) != 1 or poly.gens != target.gens for poly in polynomials):
+            raise ValueError("Polynomials must be univariate with the same generator.")
+        if any(poly.domain.characteristic() != 0 for poly in polynomials):
+            raise ValueError("Polynomial coordinates require characteristic-zero coefficients.")
+
+        size = max(len(poly.all_coeffs()) for poly in polynomials)
+        columns = [
+            Matrix.vector(*(poly.nth(power) for power in range(size)))
+            for poly in polynomials
+        ]
+        target, *basis = columns
+    elif not isinstance(target, Matrix) or any(not isinstance(direction, Matrix) for direction in basis):
+        raise TypeError("Target and basis must be all Matrix objects or all Poly objects.")
+
     if not basis:
-        if all(is_zero(value) for row in vector for value in row):
-            return vector._new([])
+        if all(is_zero(value) for row in target for value in row):
+            return target._new([])
         raise ValueError("Target is outside the empty span.")
-    target, directions = as_vectors(vector, basis)
+    target, directions = as_vectors(target, basis)
     return Matrix.from_cols(directions).solve(target)
 
 

@@ -436,6 +436,9 @@ class Matrix:
     def coords(self, basis: list[Matrix]) -> Matrix:
         """Find the coefficients of this vector or matrix in the supplied basis.
 
+        Equivalent to linear_algebra.coords(self, basis). The standalone
+        function also accepts native SymPy Poly targets and polynomial bases.
+
         basis is an ordered list of independent column vectors or same-shaped
         matrices. Return a coefficient column c whose entries c_i satisfy
         sum(c_i * basis_i) == self.

@@ -19,6 +19,7 @@ Read the code in this order:
 
 | File | What to learn |
 | --- | --- |
+| [__init__.py](linear_algebra/__init__.py) | Public `Matrix` and `coords` exports |
 | [matrix.py](linear_algebra/matrix.py) | Public API, storage, operators, elementary row operations |
 | [_matrix_algebra.py](linear_algebra/_matrix_algebra.py) | Matrix multiplication, cofactor determinant, scalar arithmetic |
 | [_row_reduction.py](linear_algebra/_row_reduction.py) | Pivot selection, RREF, solving, inverse, rank, spaces |
@@ -158,12 +159,15 @@ or spectral calculations if they contain free symbols.
 ### Coordinates and projection
 
 ```python
+from linear_algebra import Matrix, coords
+
 basis = [Matrix.vector(1, 1), Matrix.vector(1, -1)]
 v = Matrix.vector(3, 1)
 
 v.dot(Matrix.vector(1, 2))       # 5
 Matrix.vector(1, 0, 0).cross(Matrix.vector(0, 1, 0))
-v.coords(basis)            # Column vector [2, 1]
+coords(v, basis)                # Column vector [2, 1]
+v.coords(basis)                 # Same operation for a Matrix target
 v.in_span(basis)                # True, also accepts dependent spanning sets
 Matrix.is_ortho(basis)     # True
 v.ortho_coords(basis)
@@ -172,20 +176,46 @@ v.proj(Matrix.vector(1, 1))  # Column vector [2, 2]
 m1 = Matrix([[1, 2], [3, 4]])
 m2 = Matrix([[0, 1], [1, 0]])
 target = 2 * m1 + 3 * m2
-target.coords([m1, m2])    # Column vector [2, 3]
+coords(target, [m1, m2])         # Column vector [2, 3]
 target.in_span([m1, m2])   # True
 ```
 
-`coords()` solves the system whose columns are the supplied independent
-basis vectors. It also works for a basis of a proper subspace, provided the
-target is in that subspace.
+`coords(target, basis)` returns a column of scalar coefficients in the supplied
+basis order. It accepts column vectors, same-shaped matrices, or native SymPy
+polynomials. `target.coords(basis)` remains available for Matrix targets and
+delegates to the same implementation. The basis must be independent; it may
+span a proper subspace, provided the target belongs to that subspace. A dependent
+basis or target outside the span raises `ValueError`. An empty basis accepts
+only a zero target and returns `Matrix([])`.
 
-`coords()` and `in_span()` also accept same-shaped matrices. Matrices are
-vectorized column by column before solving, so `coords()` returns the scalar
-coefficients of `target` in that basis. This makes `a * A + b * B == C` a
+For matrix inputs, `coords(target, basis)` and `target.in_span(basis)` require
+matching shapes. Matrices are vectorized column by column before solving, so
+`coords()` returns the scalar coefficients of `target` in that basis. This makes
+`a * A + b * B == C` a
 one-call solve; all three matrices must share a shape. The result is still a
 column vector, so read the coefficients with `coeffs[0][0]`, `coeffs[1][0]`,
 and so on.
+
+For polynomial coordinates, pass `Poly` objects directly:
+
+```python
+from linear_algebra import Matrix, coords
+from linear_algebra.polynomial import Poly, x
+
+p = Poly(2 + 5*x + 3*x**2, x)
+basis = [Poly(1 + x, x), Poly(x + x**2, x)]
+assert coords(p, basis) == Matrix.vector(2, 3)  # p = 2*(1 + x) + 3*(x + x**2)
+```
+
+All polynomials must be univariate in the same explicit generator, with numeric
+coefficients and characteristic zero. Real, complex, and exact algebraic
+coefficients use the existing matrix solver; free symbols in coefficients,
+multivariate polynomials, and finite fields are unsupported. Different degrees
+and missing powers are handled automatically by matching coefficients of
+`1, x, x**2, ...` through the largest degree across the target and basis.
+Mixing Matrix and Poly inputs, or passing expressions instead of `Poly`, raises
+`TypeError`. Polynomial variables need not be named `x`. `in_span()`,
+`ortho_coords()`, and `proj()` retain their Matrix APIs.
 
 Orthogonal coordinates use `(v dot f) / (f dot f)`. If the target is outside
 the supplied orthogonal span, these are its projection coefficients.
@@ -291,7 +321,7 @@ This redesign intentionally changes names and some return values.
 
 | Old | New |
 | --- | --- |
-| `coordinates()` | `coords()` |
+| `coordinates()` | `coords(target, basis)` or `target.coords(basis)` for matrices |
 | `orthogonal_coordinates()` | `ortho_coords()` |
 | `is_orthogonal()` | `is_ortho()` |
 | `column_space()` | `col_space()` |

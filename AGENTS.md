@@ -36,6 +36,7 @@ Use the current code and README as the source of truth for the public API.
 
 | File | Responsibility |
 | --- | --- |
+| `linear_algebra/__init__.py` | Public `Matrix` and shared `coords` exports |
 | `linear_algebra/matrix.py` | Public `Matrix` API, storage, construction, operators, elementary row operations |
 | `linear_algebra/_matrix_algebra.py` | Arithmetic, determinant/cofactors, shared scalar operations |
 | `linear_algebra/_row_reduction.py` | RREF and pivots; solving, inverse, rank, and spaces built from them |
@@ -109,6 +110,11 @@ their own APIs. Do not rewrite them as a side effect of matrix work.
   keeping long-name aliases. Explain their full mathematical meaning in
   docstrings; `can_diag()` specifically means diagonalizable, not already diagonal.
 - Use `@` for matrix multiplication and `*` for scalar multiplication.
+- Use standalone `coords(target, basis)` for coordinates across matrices and
+  native univariate SymPy `Poly` objects. Keep `Matrix.coords(basis)` as a
+  convenience delegating to the same implementation. Convert polynomial
+  coefficients to aligned columns internally and reuse the handwritten solver;
+  do not require callers to perform that conversion or wrap native `Poly`.
 - Call static methods through their defining class name, never through an
   instance. Use `Matrix.from_cols(basis)`, not `vector.from_cols(basis)`;
   this also applies inside instance methods and algorithm helpers.

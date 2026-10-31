@@ -1,5 +1,6 @@
 from fractions import Fraction
 
+from linear_algebra import coords
 from linear_algebra.matrix import Matrix
 from linear_algebra.polynomial import Poly, x
 
@@ -17,6 +18,7 @@ def demo():
     m2 = Matrix([[0, 1], [1, 0]])
     combination = m1 * 2 + m2 * 3
     assert combination.coords([m1, m2]) == Matrix.vector(2, 3)
+    assert coords(combination, [m1, m2]) == Matrix.vector(2, 3)
     assert combination.in_span([m1, m2])
     assert not (combination + Matrix.identity(2)).in_span([m1, m2])
 
@@ -24,6 +26,15 @@ def demo():
     wide2 = Matrix([[0, 1, 0], [1, 0, 1]])
     wide_combination = wide1 * 5 - wide2 * 2
     assert wide_combination.coords([wide1, wide2]) == Matrix.vector(5, -2)
+
+    polynomial_basis = [Poly(1 + x, x), Poly(x + x**2, x)]
+    polynomial_target = Poly(2 + 5*x + 3*x**2, x)
+    coefficients = coords(polynomial_target, polynomial_basis)
+    assert coefficients == Matrix.vector(2, 3)
+    assert polynomial_target == sum(
+        coefficient[0] * direction
+        for coefficient, direction in zip(coefficients, polynomial_basis)
+    )
 
     polynomial = Poly(x**3 - 4*x**2 + 5*x - 2, x)
     assert polynomial.all_roots() == [1, 1, 2]
