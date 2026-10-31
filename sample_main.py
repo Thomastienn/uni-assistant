@@ -57,6 +57,12 @@ def demo():
     assert (a @ p).is_close(p @ d)
     assert (p @ d @ p.inv()).is_close(a)
 
+    assert a.trace() == 4
+    nilpotent = Matrix([[0, 1], [0, 0]])
+    assert nilpotent.trace() == 0
+    assert nilpotent.is_nilpotent()
+    assert not a.is_nilpotent()
+
     rhs = Matrix.vector(1, 0)
     assert a.solve(rhs) == Matrix.vector(Fraction(2, 3), Fraction(-1, 3))
     assert a.is_inverse_of(a.inv())

@@ -71,6 +71,26 @@ def multiply(a: Matrix, b: Matrix) -> Matrix:
     return a._new(rows)
 
 
+def trace(matrix: Matrix) -> Any:
+    """Return the sum of the main-diagonal entries. The empty trace is 0."""
+    require_square(matrix)
+    total = 0
+    for index in range(matrix.nrows):
+        total += matrix[index][index]
+    return total
+
+
+def is_nilpotent(matrix: Matrix) -> bool:
+    """Return whether the trace and the determinant are both zero.
+
+    A nilpotent matrix has some power equal to the zero matrix, so both
+    quantities are zero. For a 1 by 1 or 2 by 2 matrix that condition is
+    also enough. For a larger matrix it is only necessary.
+    """
+    # ponytail: trace and det only. Enough through 2 by 2; for n > 2 test A**n == 0.
+    return is_zero(trace(matrix)) and is_zero(determinant(matrix))
+
+
 def determinant(matrix: Matrix) -> Any:
     require_square(matrix)
     n = matrix.nrows

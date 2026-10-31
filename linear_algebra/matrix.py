@@ -297,6 +297,26 @@ class Matrix:
         """
         return algebra.determinant(self)
 
+    def trace(self) -> Any:
+        """Return the sum of the main-diagonal entries of a square matrix.
+
+        The empty trace is 0. Raise ValueError when the matrix is not square.
+        """
+        return algebra.trace(self)
+
+    def is_nilpotent(self) -> bool:
+        """Return whether the trace and the determinant are both zero.
+
+        Some power of a nilpotent matrix is the zero matrix, which forces
+        both quantities to be zero. For a 1 by 1 or 2 by 2 matrix that
+        condition is also enough. For a larger matrix it is only necessary:
+        [[1, 0, 0], [0, -1, 0], [0, 0, 0]] has trace 0 and determinant 0,
+        but its square is not zero. Floating entries use config.TOLERANCE.
+        Raise ValueError when the matrix is not square, or when an entry
+        still contains a free symbol.
+        """
+        return algebra.is_nilpotent(self)
+
     def minor(self, row: int, col: int) -> Any:
         """Return the determinant after deleting row and col from a square matrix.
 

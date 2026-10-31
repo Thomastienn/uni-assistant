@@ -119,6 +119,8 @@ a.without_row(0)
 a.without_col(0)
 
 a.det()
+a.trace()            # Sum of the main diagonal: 4
+a.is_nilpotent()     # False here; true when trace and det are both 0
 a.minor(0, 1)
 a.cofactor(0, 1)
 a.cof_matrix()
@@ -148,7 +150,12 @@ solutions. Both cases raise `ValueError`. For a homogeneous system, use
 Multiple right-hand sides work too: `A.solve(B)` returns `X` with
 `A @ X == B`. Inverse uses this same algorithm with `B = I`.
 Determinant uses cofactor expansion so the formula is visible; its factorial
-cost makes it suitable for small learning examples.
+cost makes it suitable for small learning examples. `trace()` adds the main
+diagonal and requires a square matrix. `is_nilpotent()` reports whether that
+sum and the determinant are both zero. For a 1 by 1 or 2 by 2 matrix, that
+is the nilpotency test: some power of the matrix is the zero matrix. For a
+larger matrix the same check is only necessary, so a true result does not
+prove nilpotency.
 
 Integer and Fraction elimination stays exact. Floats use partial pivoting and
 the absolute threshold `linear_algebra.config.TOLERANCE` (default `1e-12`).
