@@ -488,7 +488,8 @@ class Matrix:
         Accept dependent spanning sets, unlike coords(). Inputs must be
         matching column vectors or same-shaped matrices; matrices are
         vectorized column by column. An empty list spans only the zero
-        vector or zero matrix.
+        vector or zero matrix. A 0 by 0 target belongs to the span of any
+        list of matching empty matrices.
         """
         return vectors.in_span(self, basis)
 

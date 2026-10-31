@@ -13,6 +13,9 @@ def demo():
     assert grid.flatten() == Matrix.vector(1, 2, 3, 4, 5, 6)
     assert grid.vectorize() == Matrix.vector(1, 4, 2, 5, 3, 6)
 
+    empty = Matrix([])
+    assert empty.in_span([empty])
+
     # Matrices form a vector space too: coords and in_span accept same-shaped matrices.
     m1 = Matrix([[1, 2], [3, 4]])
     m2 = Matrix([[0, 1], [1, 0]])

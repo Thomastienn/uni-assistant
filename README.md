@@ -178,6 +178,7 @@ m2 = Matrix([[0, 1], [1, 0]])
 target = 2 * m1 + 3 * m2
 coords(target, [m1, m2])         # Column vector [2, 3]
 target.in_span([m1, m2])   # True
+Matrix([]).in_span([Matrix([])])  # True: the zero-dimensional matrix space
 ```
 
 `coords(target, basis)` returns a column of scalar coefficients in the supplied

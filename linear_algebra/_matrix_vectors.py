@@ -131,8 +131,11 @@ def coords(target: Matrix | Poly, basis: list[Matrix] | list[Poly]) -> Matrix:
 
 
 def in_span(vector: Matrix, basis: list[Matrix]) -> bool:
+    """Check membership in the span of matching vectors or matrices."""
     if not basis:
         return all(is_zero(value) for row in vector for value in row)
     target, directions = as_vectors(vector, basis)
+    if target.shape == (0, 0):
+        return True
     columns = Matrix.from_cols(directions)
     return columns.rank() == columns.augment(target).rank()
