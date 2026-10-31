@@ -12,6 +12,19 @@ def demo():
     assert grid.flatten() == Matrix.vector(1, 2, 3, 4, 5, 6)
     assert grid.vectorize() == Matrix.vector(1, 4, 2, 5, 3, 6)
 
+    # Matrices form a vector space too: coords and in_span accept same-shaped matrices.
+    m1 = Matrix([[1, 2], [3, 4]])
+    m2 = Matrix([[0, 1], [1, 0]])
+    combination = m1 * 2 + m2 * 3
+    assert combination.coords([m1, m2]) == Matrix.vector(2, 3)
+    assert combination.in_span([m1, m2])
+    assert not (combination + Matrix.identity(2)).in_span([m1, m2])
+
+    wide1 = Matrix([[1, 2, 3], [4, 5, 6]])
+    wide2 = Matrix([[0, 1, 0], [1, 0, 1]])
+    wide_combination = wide1 * 5 - wide2 * 2
+    assert wide_combination.coords([wide1, wide2]) == Matrix.vector(5, -2)
+
     polynomial = Poly(x**3 - 4*x**2 + 5*x - 2, x)
     assert polynomial.all_roots() == [1, 1, 2]
 

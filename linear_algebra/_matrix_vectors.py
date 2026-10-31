@@ -77,24 +77,30 @@ def project(vector: Matrix, onto: Matrix) -> Matrix:
     return onto * coefficient
 
 
-def coords(vector: Matrix, basis: list[Matrix]) -> Matrix:
-    if not vector.is_vector():
-        raise ValueError("Target must be a column vector.")
+def as_vectors(target: Matrix, basis: list[Matrix]) -> tuple[Matrix, list[Matrix]]:
+    """Return target and basis as column vectors, accepting same-shaped matrices."""
+    if target.is_vector():
+        for direction in basis:
+            require_vectors(target, direction)
+        return target, basis
     for direction in basis:
-        require_vectors(vector, direction)
+        if direction.shape != target.shape:
+            raise ValueError("Expected matrices of the same shape.")
+    return target.vectorize(), [direction.vectorize() for direction in basis]
+
+
+def coords(vector: Matrix, basis: list[Matrix]) -> Matrix:
     if not basis:
-        if all(is_zero(row[0]) for row in vector):
+        if all(is_zero(value) for row in vector for value in row):
             return vector._new([])
         raise ValueError("Target is outside the empty span.")
-    return Matrix.from_cols(basis).solve(vector)
+    target, directions = as_vectors(vector, basis)
+    return Matrix.from_cols(directions).solve(target)
 
 
 def in_span(vector: Matrix, basis: list[Matrix]) -> bool:
-    if not vector.is_vector():
-        raise ValueError("Target must be a column vector.")
-    for direction in basis:
-        require_vectors(vector, direction)
     if not basis:
-        return all(is_zero(row[0]) for row in vector)
-    columns = Matrix.from_cols(basis)
-    return columns.rank() == columns.augment(vector).rank()
+        return all(is_zero(value) for row in vector for value in row)
+    target, directions = as_vectors(vector, basis)
+    columns = Matrix.from_cols(directions)
+    return columns.rank() == columns.augment(target).rank()

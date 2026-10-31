@@ -434,20 +434,21 @@ class Matrix:
         return vectors.is_ortho(basis)
 
     def coords(self, basis: list[Matrix]) -> Matrix:
-        """Find the coefficients that express this vector in the supplied basis.
+        """Find the coefficients of this vector or matrix in the supplied basis.
 
-        basis is an ordered list of independent column vectors of the same size
-        as self. Return a coefficient column c satisfying
-        Matrix.from_cols(basis) @ c == self.
+        basis is an ordered list of independent column vectors or same-shaped
+        matrices. Return a coefficient column c whose entries c_i satisfy
+        sum(c_i * basis_i) == self.
 
         For basis = [Matrix.vector(1, 1), Matrix.vector(1, -1)],
         Matrix.vector(3, 1).coords(basis) returns the column [2, 1],
-        because (3, 1) = 2*(1, 1) + 1*(1, -1).
+        because (3, 1) = 2*(1, 1) + 1*(1, -1). Matrices are vectorized
+        column by column before solving, so the same rule applies to them.
 
         The basis need not span the whole ambient space, but self must lie in
         its span. Raise ValueError for incompatible shapes, dependent vectors,
         or a target outside the span. An empty basis accepts only the zero
-        vector and returns Matrix([]).
+        vector or zero matrix and returns Matrix([]).
         """
         return vectors.coords(self, basis)
 
@@ -479,10 +480,12 @@ class Matrix:
         return vectors.project(self, onto)
 
     def in_span(self, basis: list[Matrix]) -> bool:
-        """Check whether this vector is a linear combination of the supplied vectors.
+        """Check whether this vector or matrix is a linear combination of the supplied ones.
 
         Accept dependent spanning sets, unlike coords(). Inputs must be
-        matching column vectors. An empty list spans only the zero vector.
+        matching column vectors or same-shaped matrices; matrices are
+        vectorized column by column. An empty list spans only the zero
+        vector or zero matrix.
         """
         return vectors.in_span(self, basis)
 

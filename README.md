@@ -168,11 +168,24 @@ v.in_span(basis)                # True, also accepts dependent spanning sets
 Matrix.is_ortho(basis)     # True
 v.ortho_coords(basis)
 v.proj(Matrix.vector(1, 1))  # Column vector [2, 2]
+
+m1 = Matrix([[1, 2], [3, 4]])
+m2 = Matrix([[0, 1], [1, 0]])
+target = 2 * m1 + 3 * m2
+target.coords([m1, m2])    # Column vector [2, 3]
+target.in_span([m1, m2])   # True
 ```
 
 `coords()` solves the system whose columns are the supplied independent
 basis vectors. It also works for a basis of a proper subspace, provided the
 target is in that subspace.
+
+`coords()` and `in_span()` also accept same-shaped matrices. Matrices are
+vectorized column by column before solving, so `coords()` returns the scalar
+coefficients of `target` in that basis. This makes `a * A + b * B == C` a
+one-call solve; all three matrices must share a shape. The result is still a
+column vector, so read the coefficients with `coeffs[0][0]`, `coeffs[1][0]`,
+and so on.
 
 Orthogonal coordinates use `(v dot f) / (f dot f)`. If the target is outside
 the supplied orthogonal span, these are its projection coefficients.
