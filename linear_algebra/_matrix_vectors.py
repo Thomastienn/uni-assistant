@@ -30,6 +30,16 @@ def cross(a: Matrix, b: Matrix) -> Matrix:
     return Matrix.vector(y * w - z * v, z * u - x * w, x * v - y * u)
 
 
+def flatten(matrix: Matrix) -> Matrix:
+    """Return matrix entries row by row as a column vector."""
+    return Matrix.vector(*(value for row in matrix for value in row))
+
+
+def vectorize(matrix: Matrix) -> Matrix:
+    """Return matrix entries column by column as a column vector."""
+    return flatten(matrix.T())
+
+
 def require_real(vector: Matrix) -> None:
     if not vector.is_vector():
         raise ValueError("Expected a column vector.")

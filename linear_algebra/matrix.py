@@ -405,6 +405,24 @@ class Matrix:
         """
         return vectors.cross(self, other)
 
+    def flatten(self) -> Matrix:
+        """Return all entries as a column vector, reading rows left to right.
+
+        Matrix([[1, 2], [3, 4]]).flatten() is the column [1, 2, 3, 4].
+        An empty matrix returns Matrix([]).
+        """
+        return vectors.flatten(self)
+
+    def vectorize(self) -> Matrix:
+        """Return all entries as a column vector, reading columns top to bottom.
+
+        This is the standard column-major vectorization:
+        Matrix([[1, 2], [3, 4]]).vectorize() is the column [1, 3, 2, 4].
+        For a row or column vector, flatten() and vectorize() agree.
+        An empty matrix returns Matrix([]).
+        """
+        return vectors.vectorize(self)
+
     @staticmethod
     def is_ortho(basis: list[Matrix]) -> bool:
         """Check whether every distinct pair of supplied vectors has dot product zero.

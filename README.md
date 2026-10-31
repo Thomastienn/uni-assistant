@@ -56,6 +56,8 @@ a ** 3                     # Integer powers; negative powers use inv()
 a.T()
 a.rot90()
 a | v                      # Same as a.augment(v)
+Matrix([[1, 2], [3, 4]]).flatten()    # Column vector [1, 2, 3, 4]
+Matrix([[1, 2], [3, 4]]).vectorize()  # Column vector [1, 3, 2, 4]
 a == b                     # Exact entry equality
 a.is_close(b)              # Numerical tolerance or exact scalar simplification
 ```
@@ -71,6 +73,11 @@ Vectors and solution vectors are columns. Space methods return lists of column
 vectors, including `row_space()`, which represents each basis row as a column.
 The empty basis is `[]`; `Matrix([])` represents a 0 by 0 matrix. Other
 zero-dimension shapes are not supported.
+
+`flatten()` and `vectorize()` both return a column vector of all entries.
+`flatten()` reads rows left to right; `vectorize()` reads columns top to
+bottom, which is the standard mathematical vectorization. For a row or column
+vector they return the same result. An empty matrix returns `Matrix([])`.
 
 For keyboard input, use `Matrix.from_input()`: first enter the row count, then
 one space-separated row per line. Its default parser is `Fraction`, so

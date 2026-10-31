@@ -8,6 +8,10 @@ def demo():
     diagonal = Matrix.diag(2, 3, 4)
     assert diagonal @ Matrix.vector(1, 2, 3) == Matrix.vector(2, 6, 12)
 
+    grid = Matrix([[1, 2, 3], [4, 5, 6]])
+    assert grid.flatten() == Matrix.vector(1, 2, 3, 4, 5, 6)
+    assert grid.vectorize() == Matrix.vector(1, 4, 2, 5, 3, 6)
+
     polynomial = Poly(x**3 - 4*x**2 + 5*x - 2, x)
     assert polynomial.all_roots() == [1, 1, 2]
 
